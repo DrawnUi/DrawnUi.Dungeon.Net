@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <WasmBuildNative>true</WasmBuildNative>
+        <RootNamespace>DungeonRun</RootNamespace>
+        <!-- DRAWNUI_NET = non-Blazor base, WEB = web code paths, BROWSER = browser game defaults -->
+        <DefineConstants>$(DefineConstants);DRAWNUI_NET;WEB;NET;NET10;BROWSER;TEMP_NO_SHELL</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.7" PrivateAssets="all" />
+        <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="14.2.0" />
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.148.0" />
+    </ItemGroup>
+
+    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DrawnUi\src\Wasm\Addons\DrawnUi.Wasm.Game\DrawnUi.Wasm.Game.csproj" />
+    </ItemGroup>
+
+    <!-- A ProjectReference does not import the package's buildTransitive props (the GPU js-library link flag). -->
+    <Import Project="..\..\..\DrawnUi\src\Wasm\DrawnUi\buildTransitive\DrawnUi.Wasm.props" />
+
+    <ItemGroup>
+        <WasmExtraConfig Include="emcc_flags">
+            <Value>-s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ALLOW_MEMORY_GROWTH=1</Value>
+        </WasmExtraConfig>
+    </ItemGroup>
+
+    <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />
+
+</Project>

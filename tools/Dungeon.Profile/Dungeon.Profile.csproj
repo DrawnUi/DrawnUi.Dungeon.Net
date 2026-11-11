@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Headless allocation and time profile of the game on DrawnUi.Net (raster, desktop .NET): which types a frame
+         allocates, on the title and in a run. A dev tool, not shipped. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>DungeonRun</RootNamespace>
+        <DefineConstants>$(DefineConstants);DRAWNUI_NET</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DrawnUi\src\Net\Addons\DrawnUi.Net.Game\DrawnUi.Net.Game.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\..\src\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />
+
+</Project>
