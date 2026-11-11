@@ -45,7 +45,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | rebase by 40, bricks keyed by mod(P.z, 40) | done (shader verbatim) |
 | fog-color rect first, mesh with a white paint, clip to the control | done |
 | exit: sky quad, terrace, the four long quads | done (not yet seen on screen: 3000 m run) |
-| post effect POST with uFx every frame, uFx2/uRay/uShield/uOrb only on change | done |
+| post effect POST with uFx every frame, uFx2/uRay/uShield/uOrb only on change | done; pixel-identical to Rust on a fixed input in 6 states (idle, orb peak, hit peak, surge, shield, ghost blackout), `tools/Dungeon.Profile fx` |
 
 ## Interface
 
@@ -56,7 +56,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | score (distance), violet glow while it jumps (GLOW added and removed at runtime), streak x2/x3 | done; one glow effect object reused (no shader compile per orb) |
 | prompt (lessons, power-ups, cheers, time), pop scale 1 + 0.7 pop², glow beat | done |
 | countdown, GO, GAME OVER (lift 20), YOU ESCAPED!, restart caption after 0.6 s | done |
-| GAME OVER curtain: CURTAIN shader, UseBackground Once, ReleaseFrozenSnapshot when hidden | done, checked in the browser |
+| GAME OVER curtain: CURTAIN shader, UseBackground Once, ReleaseFrozenSnapshot when hidden | done, checked in the browser; pixel-identical to Rust at burn 0.3, 0.6, 0.9 on a fixed input |
 | title: name in a gold gradient under GLOW 0.5, caption, best escape, play caption | done; names the framework of the head ("DRAWNUI FOR .NET SAMPLE" on the web head, "DRAWNUI FOR BLAZOR SAMPLE" on Blazor), set by each head with DungeonApp.Framework |
 | frame rate label on the title only | changed: hidden with IsVisible, not opacity (here a control at opacity 0 still draws and SkiaLabelFps lays out its text every frame) |
 | buttons ? and II: plates with hover/press light (OnHover, Down, touch Up), ripple, button role | done |
@@ -102,5 +102,6 @@ Both hold 60 FPS. Scene build (CPU projection, ~490 triangles on the title) abou
 
 | What | .NET | Rust | Status |
 |---|---|---|---|
+| GLOW over GAME OVER (fixed input, 256x160) | the glow itself matches; the text sits 1 px lower | 1 px higher | engine difference in label line height: .NET rounds the line height (48 for Orbitron 38) and puts the baseline at its bottom minus the descent, 0.35 px lower than Rust's unrounded line; Skia then rounds the glyphs to whole pixels. Reported |
 | frame cost | 7.5-8.5 ms main thread per frame (Debug, interpreted) | 0.7-1 ms | both 60 FPS |
 | pause dialog on a 400 pt wide screen | HELP and HOME on line 1, RESUME on line 2 at the left of the centered block; one centered line on desktop | the same (Rust 004e49d) | resolved: both games use a SkiaWrap (Nick's order), checked at 400x760 and 1280x760 |

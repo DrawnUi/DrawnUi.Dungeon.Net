@@ -27,6 +27,11 @@ public static class Program
             MeshOnly(frames);
             return;
         }
+        if (args.Contains("fx"))
+        {
+            EffectRenders(args[Array.IndexOf(args, "fx") + 1], args.Length > Array.IndexOf(args, "fx") + 2 ? args[Array.IndexOf(args, "fx") + 2] : null);
+            return;
+        }
         if (args.Contains("wrappers"))
         {
             Wrappers();
@@ -159,6 +164,177 @@ public static class Program
         Console.WriteLine($"mesh: {frames} frames, {bytes / frames} B/frame, {watch.Elapsed.TotalMilliseconds / frames:F3} ms/frame");
         foreach (var (type, count) in listener.Types.OrderByDescending(x => x.Value).Take(30))
             Console.WriteLine($"  {count,5} x ~100KB  {type}");
+    }
+
+    /// <summary>
+    /// The fixed input DrawnUI for Rust's effect probe draws: a vertical gradient #203040 to #C08040 over the control's
+    /// height, a white 40x40 square at (100, 60), or solid blue for the curtain's second step.
+    /// </summary>
+    sealed class Picture : SkiaControl
+    {
+        public bool Blue;
+
+        protected override void Paint(DrawingContext ctx)
+        {
+            base.Paint(ctx);
+            var r = ctx.Destination;
+            var canvas = ctx.Context.Canvas;
+            using var paint = new SKPaint();
+            if (Blue)
+            {
+                paint.Color = new SKColor(0, 0, 255);
+                canvas.DrawRect(r, paint);
+                return;
+            }
+            paint.Shader = SKShader.CreateLinearGradient(new SKPoint(r.Left, r.Top), new SKPoint(r.Left, r.Bottom),
+                [new SKColor(0x20, 0x30, 0x40), new SKColor(0xC0, 0x80, 0x40)], SKShaderTileMode.Clamp);
+            canvas.DrawRect(r, paint);
+            paint.Shader = null;
+            paint.Color = SKColors.White;
+            float s = (float)ctx.Scale;
+            canvas.DrawRect(r.Left + 100 * s, r.Top + 60 * s, 40 * s, 40 * s, paint);
+        }
+    }
+
+    /// <summary>
+    /// POST, GLOW and CURTAIN over the fixed input, as rust-dungeon rendered them (Headless CPU raster, 256x160, scale
+    /// 1): writes PNGs to <paramref name="outDir"/>, prints RGBA at 9 points and, with <paramref name="rustDir"/>, the
+    /// difference to Rust's PNG of the same name (5x5 window averages).
+    /// </summary>
+    static void EffectRenders(string outDir, string rustDir)
+    {
+        Directory.CreateDirectory(outDir);
+        var font = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/Dungeon.Web/wwwroot/fonts/Orbitron-Black.ttf"));
+        SkiaFontManager.Instance.RegisterFont("FontScore", font);
+        SkiaFontManager.Instance.Initialize();
+
+        (int, int)[] points = [(0, 0), (128, 0), (255, 0), (0, 80), (128, 80), (255, 80), (0, 159), (128, 159), (255, 159)];
+
+        void Save(HeadlessCanvasHost host, string name)
+        {
+            using var image = host.Snapshot();
+            using var bitmap = SKBitmap.FromImage(image);
+            using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+            using (var file = File.Create(Path.Combine(outDir, name + ".png")))
+                data.SaveTo(file);
+            var line = string.Join(" | ", points.Select(p => { var c = bitmap.GetPixel(p.Item1, p.Item2); return $"{c.Red} {c.Green} {c.Blue}"; }));
+            Console.WriteLine($"{name}: {line}");
+            if (rustDir == null)
+                return;
+            var rustPath = Path.Combine(rustDir, name + ".png");
+            if (!File.Exists(rustPath))
+            {
+                Console.WriteLine($"  no {rustPath}");
+                return;
+            }
+            using var rust = SKBitmap.Decode(rustPath);
+            double worst = 0, sum = 0;
+            int worstX = 0, worstY = 0, n = 0;
+            for (int y = 2; y < bitmap.Height - 2; y += 1)
+            for (int x = 2; x < bitmap.Width - 2; x += 1)
+            {
+                double d = 0;
+                for (int ch = 0; ch < 3; ch++)
+                {
+                    double a = 0, b = 0;
+                    for (int dy = -2; dy <= 2; dy++)
+                    for (int dx = -2; dx <= 2; dx++)
+                    {
+                        var p = bitmap.GetPixel(x + dx, y + dy);
+                        var q = rust.GetPixel(x + dx, y + dy);
+                        a += ch == 0 ? p.Red : ch == 1 ? p.Green : p.Blue;
+                        b += ch == 0 ? q.Red : ch == 1 ? q.Green : q.Blue;
+                    }
+                    d = Math.Max(d, Math.Abs(a - b) / 25);
+                }
+                sum += d;
+                n++;
+                if (d > worst)
+                    (worst, worstX, worstY) = (d, x, y);
+            }
+            Console.WriteLine($"  vs Rust (5x5 means): mean {sum / n:F2}, worst {worst:F1} at ({worstX},{worstY})");
+        }
+
+        // POST on the picture (no cache: the engine makes the input texture)
+        (string name, float[] fx, float[] fx2, float[] shield)[] states =
+        [
+            ("post_idle", [0, 0, 0, 1], [0, 0, 0, 0], [0, 0]),
+            ("post_orb_peak", [0, 0, 0, 1], [0, 0, 0.55f, 0], [0, 0]),
+            ("post_hit_peak", [0, 0, 0.8f, 1], [0, 0, 0, 0], [0, 0]),
+            ("post_surge_mid", [1, 0, 0, 1], [0, 0.666667f, 0, 0], [0, 0]),
+            ("post_shield_held", [0, 0, 0, 1], [0, 0, 0, 0], [1, 0]),
+            ("post_ghost_mid", [0, 0, 0, 1], [0, 0, 0, 2.5f], [0, 0]),
+        ];
+        {
+            using var host = new HeadlessCanvasHost(256, 160, 1f, Colors.Black);
+            host.Canvas.Content = new Picture { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, UseCache = SkiaCacheType.None };
+            host.AdvanceFrames(5);
+            Save(host, "input");
+        }
+        foreach (var (name, fx, fx2, shield) in states)
+        {
+            using var host = new HeadlessCanvasHost(256, 160, 1f, Colors.Black);
+            var picture = new Picture { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, UseCache = SkiaCacheType.None };
+            picture.VisualEffects.Add(new SkiaShaderEffect { ShaderCode = Shaders.POST }
+                .SetUniform("uFx", fx).SetUniform("uFx2", fx2).SetUniform("uRay", 1.0f, 0.55f, 0.22f)
+                .SetUniform("uOrb", 0.147993f, 0.017940f, 0.448467f).SetUniform("uShield", shield)
+                .OnShaderError((me, error) => Console.WriteLine($"post SkSL: {error}")));
+            host.Canvas.Content = picture;
+            host.AdvanceFrames(5);
+            Save(host, name);
+        }
+
+        // GLOW on an Image-cached layer over the picture, holding GAME OVER
+        {
+            using var host = new HeadlessCanvasHost(256, 160, 1f, Colors.Black);
+            var layer = new SkiaLayer
+            {
+                VerticalOptions = LayoutOptions.Fill,
+                UseCache = SkiaCacheType.Image,
+                Children =
+                {
+                    new SkiaLabel("GAME OVER")
+                    {
+                        FontFamily = "FontScore",
+                        FontSize = 38,
+                        TextColor = Colors.White,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        HorizontalTextAlignment = DrawTextAlignment.Center,
+                    },
+                },
+            };
+            layer.VisualEffects.Add(new SkiaShaderEffect { ShaderCode = Shaders.GLOW }
+                .SetUniform("uGlow", 1.0f).SetUniform("uWash", 0.0f).SetUniform("uTint", 1.0f, 0.16f, 0.04f)
+                .OnShaderError((me, error) => Console.WriteLine($"glow SkSL: {error}")));
+            host.Canvas.Content = new SkiaLayer
+            {
+                VerticalOptions = LayoutOptions.Fill,
+                Children = { new Picture { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, UseCache = SkiaCacheType.None }, layer },
+            };
+            host.AdvanceFrames(5);
+            Save(host, "glow_game_over");
+        }
+
+        // CURTAIN: snapshot of the gradient at uBurn 0 (Once), then the picture turns blue and the curtain burns
+        foreach (var burn in new[] { 0.3f, 0.6f, 0.9f })
+        {
+            using var host = new HeadlessCanvasHost(256, 160, 1f, Colors.Black);
+            var picture = new Picture { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, UseCache = SkiaCacheType.None };
+            var uBurn = new float[] { 0 };
+            var curtain = new SkiaShaderEffect { ShaderCode = Shaders.CURTAIN, UseBackground = PostRendererEffectUseBackgroud.Once }
+                .SetUniform("uBurn", uBurn)
+                .OnShaderError((me, error) => Console.WriteLine($"curtain SkSL: {error}"));
+            var layer = new SkiaLayer { VerticalOptions = LayoutOptions.Fill, UseCache = SkiaCacheType.None };
+            layer.VisualEffects.Add(curtain);
+            host.Canvas.Content = new SkiaLayer { VerticalOptions = LayoutOptions.Fill, Children = { picture, layer } };
+            host.AdvanceFrames(5);
+            picture.Blue = true;
+            picture.Update();
+            curtain.SetUniform("uBurn", burn);
+            host.AdvanceFrames(5);
+            Save(host, "curtain_" + burn.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
+        }
     }
 
     static void Wrappers()
