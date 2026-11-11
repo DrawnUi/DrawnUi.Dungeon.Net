@@ -104,3 +104,4 @@ Both hold 60 FPS. Scene build (CPU projection, ~490 triangles on the title) abou
 |---|---|---|---|
 | screen-reader tree on the title | lists the hidden HUD status and the x2 mark (opacity 0) | leaves them out | reported (DrawnUi.Net puts opacity-0 controls in the tree) |
 | frame cost | 7.5-8.5 ms main thread per frame (Debug, interpreted) | 0.7-1 ms | both 60 FPS |
+| pause dialog on a 400 pt wide screen | the row of HELP, HOME, RESUME is wider than the dialog: the last button gets what is left and RESUME wraps to two lines | the row keeps its natural width and overflows to the left (End aligned), RESUME on one line | engine difference in Row measure of an overflowing row, reported |

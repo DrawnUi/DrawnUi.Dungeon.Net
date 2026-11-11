@@ -338,7 +338,6 @@ public partial class DungeonApp
                         Margin = new Thickness(16, 16, 0, 0),
                         HorizontalOptions = LayoutOptions.Start,
                         VerticalOptions = LayoutOptions.Start,
-                        ZIndex = 0, // in the order of the layer, under the curtain and the dialogs (its own default is on top of all)
                     }.Assign(out _fps),
 
                     // The distance, top left, in steps of ten meters: quiet (soft white, no glow) so it does not pull

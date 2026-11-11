@@ -28,7 +28,7 @@ public static class Program
             return;
         }
 
-        using var host = new HeadlessCanvasHost(240, 160, 1.0f, Colors.Black);
+        using var host = new HeadlessCanvasHost(96, 64, 1.0f, Colors.Black);
         var app = new DungeonApp();
         host.Canvas.Content = app.Build();
         if (args.Contains("noscene"))
@@ -43,6 +43,17 @@ public static class Program
             app.KeyDown(InputKey.Space); // start: countdown, then the run
             host.AdvanceFrames(240);
         }
+
+        // which controls record their cache again, and how often
+        var records = new Dictionary<string, int>();
+        void Watch(SkiaControl control, string path)
+        {
+            var name = $"{path}/{control.GetType().Name}";
+            control.CreatedCache += (s, e) => records[name] = records.GetValueOrDefault(name) + 1;
+            foreach (var child in control.Views.ToList())
+                Watch(child, name);
+        }
+        Watch((SkiaControl)host.Canvas.Content, "");
 
         using var listener = new AllocationListener();
         long before = GC.GetAllocatedBytesForCurrentThread();
@@ -59,6 +70,9 @@ public static class Program
         Console.WriteLine($"{(run ? "run" : "title")}: {frames} frames, {bytes / frames} B/frame, {watch.Elapsed.TotalMilliseconds / frames:F2} ms/frame, gen0 {GC.CollectionCount(0) - gc0}");
         foreach (var (type, count) in listener.Types.OrderByDescending(x => x.Value).Take(40))
             Console.WriteLine($"  {count,5} x ~100KB  {type}");
+        Console.WriteLine("cache records:");
+        foreach (var (name, count) in records.OrderByDescending(x => x.Value).Take(20))
+            Console.WriteLine($"  {count,6}  {name}");
     }
 
     /// <summary>

@@ -249,7 +249,9 @@ public partial class DungeonApp
                     me.TextColor = C(LINK_HOVER);
                     me.Spans.Clear();
                     me.Spans.Add(LinkText(true));
+#if !DRAWNUI_NET || WEB // the desktop .NET heads (WPF, OpenTK) have no Super.OpenLink yet
                     Super.OpenLink("https://drawnui.net");
+#endif
                 }),
                 Button("OK").WithHorizontalOptions(LayoutOptions.End).WithMargin(0, 6, 0, 0).OnTapped(me => CloseDialog()));
     }
