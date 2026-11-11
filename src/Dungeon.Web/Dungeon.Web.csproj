@@ -9,7 +9,7 @@
         <WasmBuildNative>true</WasmBuildNative>
         <RootNamespace>DungeonRun</RootNamespace>
         <!-- DRAWNUI_NET = non-Blazor base, WEB = web code paths, BROWSER = browser game defaults -->
-        <DefineConstants>$(DefineConstants);DRAWNUI_NET;WEB;NET;NET10;BROWSER;TEMP_NO_SHELL</DefineConstants>
+        <DefineConstants>$(DefineConstants);DRAWNUI_NET;WEB;NET;NET10;BROWSER</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

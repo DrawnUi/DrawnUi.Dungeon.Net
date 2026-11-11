@@ -14,9 +14,7 @@ public partial class DungeonApp
     /// <summary>A dialog over the run stops it.</summary>
     void ShellChanged()
     {
-#if !TEMP_NO_SHELL
         _paused = _shell.PopupsCount > 0;
-#endif
         _held = 0;
         _veil.IsVisible = _paused;
         // Under a dialog the HUD's buttons are gone, so Tab stays in the dialog.
@@ -26,18 +24,14 @@ public partial class DungeonApp
     void OpenDialog(Func<SkiaControl> dialog)
     {
         var content = dialog();
-#if !TEMP_NO_SHELL
         _ = _shell.OpenPopupAsync(content, showOverlay: false);
-#endif
         // the popup is in the shell's list at once: the run stops now, not after the popup's animation
         ShellChanged();
     }
 
     void ClosePopup(bool animated)
     {
-#if !TEMP_NO_SHELL
         _ = _shell.ClosePopupAsync(animated);
-#endif
     }
 
     /// <summary>
@@ -255,17 +249,9 @@ public partial class DungeonApp
                     me.TextColor = C(LINK_HOVER);
                     me.Spans.Clear();
                     me.Spans.Add(LinkText(true));
-                    OpenUrl("https://drawnui.net");
+                    Super.OpenLink("https://drawnui.net");
                 }),
                 Button("OK").WithHorizontalOptions(LayoutOptions.End).WithMargin(0, 6, 0, 0).OnTapped(me => CloseDialog()));
-    }
-
-    /// <summary>
-    /// Opens a link in the browser. Waiting for a DrawnUi way to open a URL on the Web head (Rust: cx.open_url),
-    /// asked for; until then the link only lights up.
-    /// </summary>
-    static void OpenUrl(string url)
-    {
     }
 
     /// <summary>The controls section of the help: keyboard, then touch and mouse.</summary>

@@ -41,6 +41,8 @@ You run forward by yourself. Stay alive as long as you can.
 | Start       | Space, Enter                              | Tap                                  |
 | Change lane | Left / Right, A / D (hold to keep moving) | Drag left or right (finger or mouse) |
 | Jump        | Up, W, Space                              | Tap or click anywhere                |
+| Help        | F1 (a browser may keep F1 for its own help) | The ? button                       |
+| Pause (home or resume) | P, Escape                        | The II button                        |
 
 - **Rune pillars**: change lane.
 - **Red beam** and **lava**: jump.
@@ -113,9 +115,9 @@ dotnet test tests/Dungeon.Tests
 
 Works: the whole run (rules, mesh, lighting, fog, lava, ghosts, power-ups, the exit and YOU ESCAPED!), the post
 effect, the HUD, the prompts and lessons, the countdown, GAME OVER and its burning curtain, the title's own run,
-keyboard, drag and tap, hover on the buttons, and the screen-reader tree.
+keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and the screen-reader tree.
 
-Still being ported: the help and pause dialogs, the link in the help, the flash of an orb pickup.
+Still being ported: nothing of the game; what differs from the Rust original is listed at the end of PARITY.md.
 
 Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run.
 

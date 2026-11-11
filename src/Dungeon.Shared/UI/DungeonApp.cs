@@ -34,9 +34,7 @@ public partial class DungeonApp
     const uint CELL_OFF = 0x8010_1420;
 
     // ---- the tree ----
-#if !TEMP_NO_SHELL
     SkiaShell _shell;
-#endif
     Scene _scene;
     SkiaShaderEffect _post;
     SkiaLayout _title;
@@ -274,16 +272,11 @@ public partial class DungeonApp
             .SetUniform("uBurn", _uBurn)
             .OnShaderError((me, error) => Console.WriteLine($"dungeon: curtain SkSL: {error}"));
 
-#if !TEMP_NO_SHELL
         return new SkiaShell
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            RootContent =
-#else
-        return
-#endif
-                new SkiaLayer
+            RootContent = new SkiaLayer
             {
                 VerticalOptions = LayoutOptions.Fill,
                 Children = new List<SkiaControl>
@@ -519,12 +512,7 @@ public partial class DungeonApp
                         IsVisible = false,
                     }.Assign(out _veil),
                 },
-            }
-#if !TEMP_NO_SHELL
-            ,
+            },
         }.Assign(out _shell).Adapt(me => me.Navigated += (s, e) => ShellChanged());
-#else
-        ;
-#endif
     }
 }
