@@ -1,0 +1,16 @@
+@* A game: every touch is its own (Lock), no pull-down or rubber band of the page takes a drag. *@
+<div class="drawn-host">
+    <Canvas Content="_content"
+            BackgroundColor="Colors.Black"
+            RenderingMode="RenderingModeType.Accelerated"
+            Gestures="GesturesMode.Lock"
+            HorizontalOptions="LayoutOptions.Fill"
+            VerticalOptions="LayoutOptions.Fill" />
+</div>
+
+@code {
+    /// <summary>The running game.</summary>
+    public static DungeonApp Game { get; private set; }
+
+    readonly SkiaControl _content = (Game = new DungeonApp()).Build();
+}

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>DungeonRun</RootNamespace>
+        <!-- Links native Skia into dotnet.native.wasm; needs the wasm-tools workload. -->
+        <WasmBuildNative>true</WasmBuildNative>
+        <!-- Content-hashed js/css names in index.html, so a redeploy is never served stale. -->
+        <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+        <!-- BROWSER = browser game defaults (as the DrawnUi Blazor addons) -->
+        <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
+    </PropertyGroup>
+
+    <!-- Release runs compiled ahead of time (the interpreter costs about half the frame rate). -->
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <RunAOTCompilation>true</RunAOTCompilation>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.7" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DrawnUi\src\Blazor\DrawnUi.Wasm\DrawnUi.Blazor.Wasm.csproj" />
+        <ProjectReference Include="..\..\..\DrawnUi\src\Blazor\Addons\DrawnUi.Blazor.Game\DrawnUi.Blazor.Game.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />
+
+    <ItemGroup>
+        <TrimmerRootAssembly Include="SkiaSharp" />
+    </ItemGroup>
+
+</Project>

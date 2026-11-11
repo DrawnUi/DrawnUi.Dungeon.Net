@@ -113,6 +113,15 @@ dotnet run --project src/Dungeon.Web
 
 Then open http://localhost:5871. The first build takes a few minutes (it links Skia into the WebAssembly runtime).
 
+Or run the Blazor head, the same game in a Blazor WebAssembly app:
+
+```
+dotnet run --project src/Dungeon.Blazor
+```
+
+Then open http://localhost:5873. To debug it with breakpoints, start it from the IDE's debugger (Visual Studio F5,
+or VS Code Run and Debug): its launch profile carries the WebAssembly debug proxy.
+
 Run the tests:
 
 ```
@@ -122,7 +131,8 @@ dotnet test tests/Dungeon.Tests
 ## Project layout
 
 - `src/Dungeon.Shared`: the game, shared by every head (the rules, the mesh scene, the SkSL, the HUD and dialogs).
-- `src/Dungeon.Web`: the browser head on DrawnUi.Web.
+- `src/Dungeon.Web`: the browser head on DrawnUi.Web (pure WebAssembly, no Blazor).
+- `src/Dungeon.Blazor`: the browser head on DrawnUi.Blazor (Blazor WebAssembly).
 - `tests/Dungeon.Tests`: tests of the rules of the run.
 - `tools/Dungeon.Profile`: a headless profile of the frame's allocations on DrawnUi.Net.
 
@@ -134,7 +144,7 @@ keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and th
 
 Still being ported: nothing of the game; what differs from the Rust original is listed at the end of PARITY.md.
 
-Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run.
+Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor).
 
 [PARITY.md](PARITY.md) lists every feature of the Rust game and where it is here.
 

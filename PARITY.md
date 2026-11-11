@@ -16,9 +16,9 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | `src/lib.rs` App, build | `src/Dungeon.Shared/UI/DungeonApp.cs` | done |
 | `src/lib.rs` tick, show_prompt, flash_score | `src/Dungeon.Shared/UI/DungeonApp.Tick.cs` | done |
 | `src/lib.rs` act, key_down/up, gesture | `src/Dungeon.Shared/UI/DungeonApp.Input.cs` | done |
-| `src/lib.rs` dialogs | `src/Dungeon.Shared/UI/DungeonApp.Dialogs.cs` | done (SkiaShell in the Web head, DrawnUi bc44b28f) |
-| `src/main.rs`, `run()` | `src/Dungeon.Web/Program.cs` | done (web) |
-| `web/index.html` | `src/Dungeon.Web/wwwroot/index.html` | done; canonical/og URLs left out until a domain exists |
+| `src/lib.rs` dialogs | `src/Dungeon.Shared/UI/DungeonApp.Dialogs.cs` | done (SkiaShell in the Web head, DrawnUi bc44b28f, and in the Blazor head, DrawnUi 548d2a14) |
+| `src/main.rs`, `run()` | `src/Dungeon.Web/Program.cs`, `src/Dungeon.Blazor/Program.cs` | done (web; Blazor: the standard DrawnUI Blazor startup, keyboard on, port 5873) |
+| `web/index.html` | `src/Dungeon.Web/wwwroot/index.html`, `src/Dungeon.Blazor/wwwroot/index.html` | done; canonical/og URLs left out until a domain exists |
 | `web/favicon.ico`, `og.jpg`, `robots.txt` | `wwwroot/` | done; `sitemap.xml` waits for a domain |
 | `assets/*.ttf` | `wwwroot/fonts/` | done |
 
