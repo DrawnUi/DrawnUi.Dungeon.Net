@@ -29,8 +29,17 @@ Why not without `SKMesh`:
 - **One full-screen shader** could trace the corridor itself, but that is a different renderer: every pixel would have
   to test the walls, pillars and sprites, which costs far more per pixel.
 
-The shaders are in `src/Dungeon.Shared/Game/Shaders.cs`: `MESH_VS` and `MESH_FS` for the dungeon, `POST` for the
-effects over the whole picture, and `GLOW`, `CURTAIN` and `DIALOG` for the screens.
+All the shaders are the game's own SkSL, written for Dungeon Run and shared word for word with the Rust version, in
+`src/Dungeon.Shared/Game/Shaders.cs`. Skia compiles them at run time (`SKRuntimeEffect`) and runs them on the GPU;
+SkiaSharp has no built-in 3D lighting, so a mesh is always drawn with shaders you write yourself.
+
+- `MESH_FS` is the dungeon itself, about 270 lines: ten materials (floor, ceiling, wall, lava, rune pillar, orb,
+  flame, beam and two power-ups), procedural bricks with bevels, flickering torches every 10 units, fog, glowing
+  runes, the lava, and the daylight and sky behind the exit.
+- `MESH_VS` is short on purpose: the positions come projected from the CPU, so it only hands the values on.
+- `POST` adds the effects over the whole picture: color fringes and a vignette at the edges, grain, the red of a hit,
+  the orb pickup pulse, the health and shield auras, the surge rays and the ghost's blackout;
+  and `GLOW`, `CURTAIN` and `DIALOG` draw the glowing titles, the GAME OVER burn and the dialog panels.
 
 ## How to play
 
