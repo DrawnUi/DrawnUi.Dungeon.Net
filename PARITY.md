@@ -17,7 +17,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | `src/lib.rs` tick, show_prompt, flash_score | `src/Dungeon.Shared/UI/DungeonApp.Tick.cs` | done |
 | `src/lib.rs` act, key_down/up, gesture | `src/Dungeon.Shared/UI/DungeonApp.Input.cs` | done |
 | `src/lib.rs` dialogs | `src/Dungeon.Shared/UI/DungeonApp.Dialogs.cs` | done (SkiaShell in the Web head, DrawnUi bc44b28f, and in the Blazor head, DrawnUi 548d2a14) |
-| `src/main.rs`, `run()` | `src/Dungeon.Web/Program.cs`, `src/Dungeon.Blazor/Program.cs` | done (web; Blazor: the standard DrawnUI Blazor startup, keyboard on, port 5873) |
+| `src/main.rs`, `run()` | `src/Dungeon.Web/Program.cs`, `src/Dungeon.Blazor/Program.cs`, `src/Dungeon.OpenTk/Program.cs`, `src/Dungeon.Wpf/App.xaml.cs` | done (web; Blazor: the standard DrawnUI Blazor startup, keyboard on, port 5873; desktop: a 1100x700 window titled Dungeon Run as in Rust, no console window, the game's icon on exe, window and taskbar) |
 | `web/index.html` | `src/Dungeon.Web/wwwroot/index.html`, `src/Dungeon.Blazor/wwwroot/index.html` | done; canonical/og URLs left out until a domain exists |
 | `web/favicon.ico`, `og.jpg`, `robots.txt` | `wwwroot/` | done; `sitemap.xml` waits for a domain |
 | `assets/*.ttf` | `wwwroot/fonts/` | done |
@@ -64,7 +64,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | layout: narrow < 620 (HUD margin 62), title 32 under 440, prompt 28 and GAME OVER 38 under 520 | done |
 | caches: Rust `Image` (an offscreen GPU surface there) | changed: `UseCache = GPU` (in DrawnUi.Net `Image` is a CPU bitmap; GPU is what Rust's Image is) |
 | dialogs: help (scroll with max height, sections, swatches, link), pause (help, home, resume in a SkiaWrap: spacing 14, centered, as Rust 004e49d), DIALOG shader Never / no input texture, animated while open | done: open/close, pause stops the run (shell Navigated + at open), help from pause comes back to pause, Enter/Space press the main button, F1 toggles; DIALOG panel needed DrawnUi 901f64e9 (iOffset of a shader without input) |
-| link "MADE WITH DRAWNUI FOR .NET" opens drawnui.net | done, per head: "MADE WITH DRAWNUI FOR <framework>" opens that framework's DrawnUI docs (.NET: drawnui.net, Blazor: articles/blazor, OpenTK and WPF: their articles) in a new tab (Super.OpenLink, DrawnUi bc44b28f on the Web head) |
+| link "MADE WITH DRAWNUI FOR .NET" opens drawnui.net | done, per head: "MADE WITH DRAWNUI FOR <framework>" opens that framework's DrawnUI docs (.NET: drawnui.net, Blazor: articles/blazor, OpenTK and WPF: their articles) in a new tab, or the default browser on the desktop (Super.OpenLink: DrawnUi bc44b28f web, 548d2a14 Blazor, 55712bde OpenTK and WPF) |
 
 ## Input
 
@@ -103,5 +103,6 @@ Both hold 60 FPS. Scene build (CPU projection, ~490 triangles on the title) abou
 | What | .NET | Rust | Status |
 |---|---|---|---|
 | GLOW over GAME OVER (fixed input, 256x160) | the glow itself matches; the text sits 1 px lower | 1 px higher | engine difference in label line height: .NET rounds the line height (48 for Orbitron 38) and puts the baseline at its bottom minus the descent, 0.35 px lower than Rust's unrounded line; Skia then rounds the glyphs to whole pixels. Reported |
+| desktop window size on a scaled display | OpenTK: 1100x700 pixels, the canvas at scale 1 (the OpenTK head draws 1 point = 1 pixel), so the same 1100x700 points as Rust but physically smaller at 125 %; WPF: 1100x700 points | 1100x700 points | head rule of DrawnUi.OpenTk, the layout is the same |
 | frame cost | 7.5-8.5 ms main thread per frame (Debug, interpreted) | 0.7-1 ms | both 60 FPS |
 | pause dialog on a 400 pt wide screen | HELP and HOME on line 1, RESUME on line 2 at the left of the centered block; one centered line on desktop | the same (Rust 004e49d) | resolved: both games use a SkiaWrap (Nick's order), checked at 400x760 and 1280x760 |

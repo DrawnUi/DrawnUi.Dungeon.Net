@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- WinExe: no console window on Windows -->
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>DungeonRun</RootNamespace>
+        <AssemblyName>DungeonRun</AssemblyName>
+        <Title>Dungeon Run</Title>
+        <!-- the exe's icon (Explorer, taskbar); the window's own icon is the embedded copy, see Program.cs -->
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+        <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="icon.ico" />
+    </ItemGroup>
+
+    <!-- dotnet publish -c Release -r win-x64: one trimmed exe that needs no .NET installed -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release' AND '$(RuntimeIdentifier)' != ''">
+        <SelfContained>true</SelfContained>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>full</TrimMode>
+        <!-- the Windows screen-reader support is COM interop: trimming turns it off -->
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <!-- reached by reflection or COM: kept whole by the trimmer -->
+    <ItemGroup Condition="'$(PublishTrimmed)' == 'true'">
+        <TrimmerRootAssembly Include="OpenTK.Graphics" />
+        <TrimmerRootAssembly Include="OpenTK.Windowing.Desktop" />
+        <TrimmerRootAssembly Include="SkiaSharp" />
+        <TrimmerRootAssembly Include="HarfBuzzSharp" />
+        <TrimmerRootAssembly Include="DrawnUi.OpenTk" />
+    </ItemGroup>
+
+    <!-- the published folder: the exe and its assets, no symbols or API docs -->
+    <Target Name="ExcludeSymbolsFromPublish" AfterTargets="ComputeFilesToPublish">
+        <ItemGroup>
+            <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb' OR '%(Extension)' == '.xml'" />
+        </ItemGroup>
+    </Target>
+
+    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DrawnUi\src\OpenTk\Addons\DrawnUi.OpenTk.Game\DrawnUi.OpenTk.Game.csproj" />
+        <!-- Linux publish: the native Skia runtime -->
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.148.0" />
+    </ItemGroup>
+
+    <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />
+
+    <!-- The fonts of the web head, next to the exe (OpenTK reads assets from the output folder). -->
+    <ItemGroup>
+        <Content Include="..\Dungeon.Web\wwwroot\fonts\*.ttf" Link="fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

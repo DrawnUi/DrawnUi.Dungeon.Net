@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- WinExe: no console window -->
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>DungeonRun</RootNamespace>
+        <AssemblyName>DungeonRun</AssemblyName>
+        <Title>Dungeon Run</Title>
+        <!-- exe, window and taskbar icon -->
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DrawnUi\src\Wpf\Drawnui.Wpf\DrawnUi.Wpf.csproj" />
+        <ProjectReference Include="..\..\..\DrawnUi\src\Wpf\Addons\DrawnUi.Wpf.Game\DrawnUi.Wpf.Game.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />
+
+    <!-- The fonts of the web head, next to the exe (this head reads assets from the output folder). -->
+    <ItemGroup>
+        <Content Include="..\Dungeon.Web\wwwroot\fonts\*.ttf" Link="fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

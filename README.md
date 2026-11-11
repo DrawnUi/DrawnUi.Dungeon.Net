@@ -122,6 +122,16 @@ dotnet run --project src/Dungeon.Blazor
 Then open http://localhost:5873. To debug it with breakpoints, start it from the IDE's debugger (Visual Studio F5,
 or VS Code Run and Debug): its launch profile carries the WebAssembly debug proxy.
 
+Or run it on the desktop, in a window:
+
+```
+dotnet run --project src/Dungeon.OpenTk
+dotnet run --project src/Dungeon.Wpf
+```
+
+The OpenTK head runs on Windows and Linux, the WPF head on Windows. One exe that needs no .NET installed:
+`dotnet publish src/Dungeon.OpenTk -c Release -r win-x64 -o publish` (or `-r linux-x64`).
+
 Run the tests:
 
 ```
@@ -133,6 +143,8 @@ dotnet test tests/Dungeon.Tests
 - `src/Dungeon.Shared`: the game, shared by every head (the rules, the mesh scene, the SkSL, the HUD and dialogs).
 - `src/Dungeon.Web`: the browser head on DrawnUi.Web (pure WebAssembly, no Blazor).
 - `src/Dungeon.Blazor`: the browser head on DrawnUi.Blazor (Blazor WebAssembly).
+- `src/Dungeon.OpenTk`: the desktop head on DrawnUi.OpenTk (an OpenTK window, Windows and Linux).
+- `src/Dungeon.Wpf`: the desktop head on DrawnUi.Wpf (a WPF window, Windows).
 - `tests/Dungeon.Tests`: tests of the rules of the run.
 - `tools/Dungeon.Profile`: a headless profile of the frame's allocations on DrawnUi.Net.
 
@@ -144,7 +156,7 @@ keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and th
 
 Still being ported: nothing of the game; what differs from the Rust original is listed at the end of PARITY.md.
 
-Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor).
+Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor) and on both desktop heads (OpenTK and WPF, Release).
 
 [PARITY.md](PARITY.md) lists every feature of the Rust game and where it is here.
 
