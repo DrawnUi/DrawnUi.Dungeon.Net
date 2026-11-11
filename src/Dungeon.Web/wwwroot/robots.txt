@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+# the .NET runtime and libraries: crawlers read the page itself, not the multi-MB payload
+Disallow: /_framework/
+Disallow: /_content/
+
+Sitemap: https://dungeonnet.drawnui.net/sitemap.xml

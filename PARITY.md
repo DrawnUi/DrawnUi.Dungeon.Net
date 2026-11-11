@@ -18,8 +18,8 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | `src/lib.rs` act, key_down/up, gesture | `src/Dungeon.Shared/UI/DungeonApp.Input.cs` | done |
 | `src/lib.rs` dialogs | `src/Dungeon.Shared/UI/DungeonApp.Dialogs.cs` | done (SkiaShell in the Web head, DrawnUi bc44b28f, and in the Blazor head, DrawnUi 548d2a14) |
 | `src/main.rs`, `run()` | `src/Dungeon.Web/Program.cs`, `src/Dungeon.Blazor/Program.cs`, `src/Dungeon.OpenTk/Program.cs`, `src/Dungeon.Wpf/App.xaml.cs` | done (web; Blazor: the standard DrawnUI Blazor startup, keyboard on, port 5873; desktop: a 1100x700 window titled Dungeon Run as in Rust, no console window, the game's icon on exe, window and taskbar) |
-| `web/index.html` | `src/Dungeon.Web/wwwroot/index.html`, `src/Dungeon.Blazor/wwwroot/index.html` | done; canonical/og URLs left out until a domain exists |
-| `web/favicon.ico`, `og.jpg`, `robots.txt` | `wwwroot/` | done; `sitemap.xml` waits for a domain |
+| `web/index.html` | `src/Dungeon.Web/wwwroot/index.html`, `src/Dungeon.Blazor/wwwroot/index.html` | done; canonical and og URLs of each site (dungeonnet.drawnui.net, dungeonblazor.drawnui.net) |
+| `web/favicon.ico`, `og.jpg`, `robots.txt` | `wwwroot/` | done, with `sitemap.xml` per site; robots.txt points to it and keeps crawlers off the .NET payload (`_framework`, `_content`) |
 | `assets/*.ttf` | `wwwroot/fonts/` | done |
 
 ## Rules of the run (World)
