@@ -4,6 +4,34 @@ Dungeon Run is a first-person dungeon runner you play in the browser. It is a po
 [DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look. The 3D is
 one `SKMesh` with SkSL shaders on Skia 2D, no 3D API. It runs as pure .NET WebAssembly (DrawnUi.Web).
 
+This demo shows how to use `SKMesh` and SkSL shaders in a .NET app. The `SKMesh` API comes from DrawnUi
+(`using DrawnUi.Draw.Meshes;`): it has the same classes and methods as SkiaSharp's upcoming `SKMesh`, so when SkiaSharp
+ships its own, removing that one `using` line switches the game to it.
+
+## Why SKMesh
+
+The shaders do the painting and `SKMesh` does the shape. Every frame:
+
+- **The C# code builds the geometry.** Every visible quad (floor, walls, ceiling, lava, pillars, and the sprites for
+  orbs, flames, beam, ghost and power-ups) is clipped at the near plane and projected to the screen on the CPU. All of
+  it goes into one mesh, drawn with one `DrawMesh` call (`src/Dungeon.Shared/Game/Scene.cs`).
+- **`SKMesh` decides which pixel belongs to which surface**, and gives each pixel that surface's values, blended
+  between its corners with perspective correction: world position, texture position, material, lava glow, normal and a
+  random seed. That's 12 numbers per pixel.
+- **The fragment shader (`MESH_FS`) paints each pixel from those numbers**: bricks, mortar, torchlight, fog, runes,
+  lava, flames and the glow of the sprites.
+- **The vertex shader (`MESH_VS`) only passes the values on**, because the positions are already computed on the CPU.
+
+Why not without `SKMesh`:
+
+- **SkiaSharp's `DrawVertices`** blends only 2 numbers plus one 8-bit color per pixel, not the 12 the lighting needs.
+  The alternative is one draw per quad with that quad's values passed in: thousands of draw calls per frame.
+- **One full-screen shader** could trace the corridor itself, but that is a different renderer: every pixel would have
+  to test the walls, pillars and sprites, which costs far more per pixel.
+
+The shaders are in `src/Dungeon.Shared/Game/Shaders.cs`: `MESH_VS` and `MESH_FS` for the dungeon, `POST` for the
+effects over the whole picture, and `GLOW`, `CURTAIN` and `DIALOG` for the screens.
+
 ## How to play
 
 You run forward by yourself. Stay alive as long as you can.
