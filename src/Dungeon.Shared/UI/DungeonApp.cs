@@ -22,6 +22,21 @@ public partial class DungeonApp
     /// <summary>The arrows of the help come from this fallback font.</summary>
     public const string SYMBOLS = "FontSymbols";
 
+    /// <summary>
+    /// The framework the game runs on, as the title and the help name it ("DRAWNUI FOR .NET SAMPLE"): set by each head
+    /// at startup, ".NET" (pure WebAssembly), "BLAZOR", "MAUI", "OPENTK", "WPF".
+    /// </summary>
+    public static string Framework { get; set; } = ".NET";
+
+    /// <summary>The DrawnUI docs page of <see cref="Framework"/>, opened by the help's link.</summary>
+    static string FrameworkDocs => Framework switch
+    {
+        "BLAZOR" => "https://drawnui.net/articles/blazor/index.html",
+        "OPENTK" => "https://drawnui.net/articles/opentk/index.html",
+        "WPF" => "https://drawnui.net/articles/wpf/index.html",
+        _ => "https://drawnui.net/",
+    };
+
     /// <summary>The title's gradient: gold to amber.</summary>
     static readonly uint[] GOLD = [0xFFFF_F4D0, 0xFFFF_C050, 0xFFD0_6810];
     static readonly uint[] FIRE = [0xFFFF_E870, 0xFFFF_8A20, 0xFFE0_1810];
@@ -478,7 +493,7 @@ public partial class DungeonApp
                                     }.Assign(out _name),
                                 },
                             },
-                            Centered("DRAWNUI FOR .NET SAMPLE", 14, ACCENT),
+                            Centered($"DRAWNUI FOR {Framework} SAMPLE", 14, ACCENT),
                             Centered("", 11, ACCENT).WithVisibility(false).Assign(out _best),
                             Centered("TAP OR PRESS SPACE TO PLAY", 11, 0x99FF_FFFF),
                         },

@@ -185,7 +185,7 @@ public partial class DungeonApp
     }
 
     /// <summary>The help's link text, underlined under the mouse or when tapped.</summary>
-    static TextSpan LinkText(bool underline) => new() { Text = "MADE WITH DRAWNUI FOR .NET", Underline = underline };
+    static TextSpan LinkText(bool underline) => new() { Text = $"MADE WITH DRAWNUI FOR {Framework}", Underline = underline };
 
     /// <summary>
     /// What to do, what not to do, and only then the controls: keyboard, then touch and mouse. The text scrolls when
@@ -250,7 +250,7 @@ public partial class DungeonApp
                     me.Spans.Clear();
                     me.Spans.Add(LinkText(true));
 #if !DRAWNUI_NET || WEB // the desktop .NET heads (WPF, OpenTK) have no Super.OpenLink yet
-                    Super.OpenLink("https://drawnui.net");
+                    Super.OpenLink(FrameworkDocs);
 #endif
                 }),
                 Button("OK").WithHorizontalOptions(LayoutOptions.End).WithMargin(0, 6, 0, 0).OnTapped(me => CloseDialog()));
@@ -274,10 +274,11 @@ public partial class DungeonApp
     SkiaControl PauseDialog()
     {
         _helpOpen = false;
-        return Dialog("PAUSED", new SkiaRow
+        // A wrap: on a narrow screen what does not fit goes to the next line, nothing squeezed.
+        return Dialog("PAUSED", new SkiaWrap
         {
             Spacing = 14,
-            HorizontalOptions = LayoutOptions.End,
+            HorizontalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 12, 0, 0),
             Children = new List<SkiaControl>
             {

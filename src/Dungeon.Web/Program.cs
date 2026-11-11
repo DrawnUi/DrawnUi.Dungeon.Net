@@ -22,6 +22,8 @@ public static partial class Program
     {
         // Every label is text to a screen reader.
         SkiaLabel.DefaultAccessibilityRole = Aria.RoleText;
+        // The title and the help name the framework: "DRAWNUI FOR .NET SAMPLE".
+        DungeonApp.Framework = ".NET";
 
         return Super.UseDrawnUi()
             .ConfigureFonts(fonts =>
