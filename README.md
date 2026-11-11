@@ -1,26 +1,37 @@
 # Dungeon Run for DrawnUI .NET
 
 Dungeon Run is a first-person dungeon runner you play in the browser. It is a port of the
-[DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look. The 3D is
-one `SKMesh` with SkSL shaders on Skia 2D, no 3D API. It runs as pure .NET WebAssembly (DrawnUi.Web).
+[DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look, with no 3D
+API, only Skia 2D. It runs as pure .NET WebAssembly (DrawnUi.Web).
 
-This demo shows how to use `SKMesh` and SkSL shaders in a .NET app. The `SKMesh` API comes from DrawnUi
-(`using DrawnUi.Draw.Meshes;`): it has the same classes and methods as SkiaSharp's upcoming `SKMesh`, so when SkiaSharp
-ships its own, removing that one `using` line switches the game to it.
+This demo shows a full 3D world painted by SkSL shaders in a .NET app. One `SKMesh` carries the scene's triangles
+(floor, walls, pillars, sprites) and tells each pixel which surface it is on; the shaders do all the painting.
+
+## The shaders
+
+All the shaders are the game's own SkSL, written for Dungeon Run and shared word for word with the Rust version, in
+`src/Dungeon.Shared/Game/Shaders.cs`. Skia compiles them at run time (`SKRuntimeEffect`) and runs them on the GPU.
+SkiaSharp has no built-in 3D lighting: everything you see is drawn by these shaders.
+
+- `MESH_FS` is the dungeon itself, about 270 lines: ten materials (floor, ceiling, wall, lava, rune pillar, orb,
+  flame, beam and two power-ups), procedural bricks with bevels, flickering torches every 10 units, fog, glowing
+  runes, the lava, and the daylight and sky behind the exit.
+- `POST` adds the effects over the whole picture: color fringes and a vignette at the edges, grain, the red of a hit,
+  the orb pickup pulse, the health and shield auras, the surge rays and the ghost's blackout.
+- `GLOW`, `CURTAIN` and `DIALOG` draw the glowing titles, the GAME OVER burn and the dialog panels.
+- `MESH_VS` is short on purpose: the positions come projected from the CPU, so it only hands the values on.
 
 ## Why SKMesh
 
-The shaders do the painting and `SKMesh` does the shape. Every frame:
+A shader alone only knows "I am pixel x, y". `SKMesh` tells it what it is drawing. Every frame:
 
-- **The C# code builds the geometry.** Every visible quad (floor, walls, ceiling, lava, pillars, and the sprites for
+- **The C# code builds the triangles.** Every visible quad (floor, walls, ceiling, lava, pillars, and the sprites for
   orbs, flames, beam, ghost and power-ups) is clipped at the near plane and projected to the screen on the CPU. All of
   it goes into one mesh, drawn with one `DrawMesh` call (`src/Dungeon.Shared/Game/Scene.cs`).
-- **`SKMesh` decides which pixel belongs to which surface**, and gives each pixel that surface's values, blended
-  between its corners with perspective correction: world position, texture position, material, lava glow, normal and a
-  random seed. That's 12 numbers per pixel.
-- **The fragment shader (`MESH_FS`) paints each pixel from those numbers**: bricks, mortar, torchlight, fog, runes,
-  lava, flames and the glow of the sprites.
-- **The vertex shader (`MESH_VS`) only passes the values on**, because the positions are already computed on the CPU.
+- **`SKMesh` finds which triangle covers each pixel**, and gives the pixel that surface's values, blended between its
+  corners with perspective correction: world position, texture position, material, lava glow, normal and a random
+  seed. That's 12 numbers per pixel.
+- **`MESH_FS` paints the pixel from those numbers.**
 
 Why not without `SKMesh`:
 
@@ -29,17 +40,12 @@ Why not without `SKMesh`:
 - **One full-screen shader** could trace the corridor itself, but that is a different renderer: every pixel would have
   to test the walls, pillars and sprites, which costs far more per pixel.
 
-All the shaders are the game's own SkSL, written for Dungeon Run and shared word for word with the Rust version, in
-`src/Dungeon.Shared/Game/Shaders.cs`. Skia compiles them at run time (`SKRuntimeEffect`) and runs them on the GPU;
-SkiaSharp has no built-in 3D lighting, so a mesh is always drawn with shaders you write yourself.
+The `SKMesh` API comes from DrawnUi (`using DrawnUi.Draw.Meshes;`): it has the same classes and methods as SkiaSharp's
+upcoming `SKMesh`, so when SkiaSharp ships its own, removing that one `using` line switches the game to it.
 
-- `MESH_FS` is the dungeon itself, about 270 lines: ten materials (floor, ceiling, wall, lava, rune pillar, orb,
-  flame, beam and two power-ups), procedural bricks with bevels, flickering torches every 10 units, fog, glowing
-  runes, the lava, and the daylight and sky behind the exit.
-- `MESH_VS` is short on purpose: the positions come projected from the CPU, so it only hands the values on.
-- `POST` adds the effects over the whole picture: color fringes and a vignette at the edges, grain, the red of a hit,
-  the orb pickup pulse, the health and shield auras, the surge rays and the ghost's blackout;
-  and `GLOW`, `CURTAIN` and `DIALOG` draw the glowing titles, the GAME OVER burn and the dialog panels.
+Here the mesh's vertex shader has nothing to do. For an example where it does the 3D work on the GPU (rotating,
+projecting and lighting a model loaded from an OBJ file), see the OBJ screen of DrawnUi's Blazor sandbox:
+[`SkMeshRocketProbe.razor`](https://github.com/DrawnUi/DrawnUi.Net/blob/Cells/src/Blazor/Samples/BlazorSandbox/Pages/SkMeshRocketProbe.razor).
 
 ## How to play
 
