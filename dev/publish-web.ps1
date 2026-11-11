@@ -17,6 +17,11 @@ if (-not $Out) {
     if (Test-Path $Out) { Remove-Item -Recurse -Force $Out }
     # No AOT for the site: an AOT dotnet.native.wasm (46 MB) is over Cloudflare Pages' 25 MiB per-file limit.
     # The interpreted Release build holds 60 FPS in the game (the Web head is interpreted too).
+    # A clean Release state first: an earlier AOT publish (the Blazor head's Release default) leaves assemblies with
+    # their IL stripped in obj, and an interpreted publish reuses them: the app dies at start in the interpreter
+    # ("NIY encountered", "runtime and class libraries are out of sync").
+    $projectDir = Split-Path (Join-Path $root $project) -Parent
+    Remove-Item -Recurse -Force (Join-Path $projectDir 'obj/Release'), (Join-Path $projectDir 'bin/Release') -ErrorAction SilentlyContinue
     dotnet publish (Join-Path $root $project) -c Release -o $Out -nologo -p:RunAOTCompilation=false
     if ($LASTEXITCODE -ne 0) { throw "publish failed" }
 }
