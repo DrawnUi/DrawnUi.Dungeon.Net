@@ -73,7 +73,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 | keys: arrows/WASD lanes, Up/W/Space/Enter jump, Escape/P menu, F1 help, any key leaves GAME OVER (after 0.6 s) | done |
 | held lane key repeat 0.2 s then 0.13 s | done |
 | keys the canvas navigation used are skipped (KeyboardManager.IsKeyHandled) | done |
-| NumpadEnter in a dialog | partial: DrawnUi's InputKey has no NumpadEnter (reported) |
+| NumpadEnter in a dialog | done (numpad Enter arrives as Enter, DrawnUi 2e596cb9) |
 | BrowserBack (Android) | n/a on the web head |
 | drag: a lane per 44 pt there and back, past 16 pt it is a drag; tap/click anywhere jumps or starts | done |
 | gestures Lock | done |
@@ -84,7 +84,7 @@ DrawnUi referenced as source (`C:\Dev\Cases\GitHub\DrawnUi`, branch Cells). Stat
 |---|---|
 | labels read as text (SkiaLabel.DefaultAccessibilityRole), button captions presentation | done |
 | health status (polite), distance "Distance N meters", countdown/prompt assertive | done |
-| controls at opacity 0 (HUD on the title, x2 mark) | partial: DrawnUi.Net puts them in the screen-reader tree, Rust leaves them out (reported) |
+| controls at opacity 0 (HUD on the title, x2 mark) | done: left out of the screen-reader tree, as Rust (DrawnUi 4bd759e8) |
 
 ## Performance (Chrome, 1394x964 CSS px at 1.25, shared machine)
 
@@ -102,6 +102,5 @@ Both hold 60 FPS. Scene build (CPU projection, ~490 triangles on the title) abou
 
 | What | .NET | Rust | Status |
 |---|---|---|---|
-| screen-reader tree on the title | lists the hidden HUD status and the x2 mark (opacity 0) | leaves them out | reported (DrawnUi.Net puts opacity-0 controls in the tree) |
 | frame cost | 7.5-8.5 ms main thread per frame (Debug, interpreted) | 0.7-1 ms | both 60 FPS |
 | pause dialog on a 400 pt wide screen | the row of HELP, HOME, RESUME is wider than the dialog: the last button gets what is left and RESUME wraps to two lines | the row keeps its natural width and overflows to the left (End aligned), RESUME on one line | engine difference in Row measure of an overflowing row, reported |

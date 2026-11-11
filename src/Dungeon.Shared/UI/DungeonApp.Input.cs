@@ -54,7 +54,7 @@ public partial class DungeonApp
         }
         switch (key)
         {
-            // In a dialog, Enter and Space press its main button (Rust also takes NumpadEnter: DrawnUi's InputKey has none).
+            // In a dialog, Enter and Space press its main button (numpad Enter arrives as Enter, as Rust's NumpadEnter).
             case InputKey.Enter or InputKey.Space when _paused:
                 CloseDialog();
                 break;
