@@ -51,7 +51,9 @@ public partial class DungeonApp
     {
         // On a narrow screen (a phone held upright) the health does not fit between the score and the buttons:
         // it goes under them.
-        float canvasWidth = (float)_game.Width, canvasHeight = (float)_game.Height;
+        // the size the system bars and cutouts leave free (the whole canvas on the web and the desktop)
+        float canvasWidth = (float)(_game.Width - _safe.Margin.HorizontalThickness);
+        float canvasHeight = (float)(_game.Height - _safe.Margin.VerticalThickness);
         _canvasHeight = canvasHeight;
         if (canvasWidth != _canvasWidth)
         {

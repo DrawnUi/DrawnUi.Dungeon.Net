@@ -49,12 +49,13 @@ public partial class DungeonApp
     const uint CELL_OFF = 0x8010_1420;
 
     // ---- the tree ----
-    SkiaShell _shell;
     Scene _scene;
     SkiaShaderEffect _post;
     SkiaLayout _title;
     SkiaLabel _score;
     SkiaLayout _hud;
+    /// <summary>Everything over the game that must stay clear of the system bars and cutouts.</summary>
+    SkiaLayout _safe;
     /// <summary>The frame rate, top left, on the title only (the distance is there during a run).</summary>
     SkiaLabelFps _fps;
     /// <summary>Help and pause, top right.</summary>
@@ -167,7 +168,7 @@ public partial class DungeonApp
     readonly float[] _uCountTint = new float[3];
 
     /// <summary>A color (0xAARRGGBB).</summary>
-    static Color C(uint argb) => new SKColor(argb);
+    static Color C(uint argb) => Color.FromRgba((byte)(argb >> 16), (byte)(argb >> 8), (byte)argb, (byte)(argb >> 24));
 
     /// <summary>A color (0xAARRGGBB) as the red, green and blue a shader's tint takes.</summary>
     static float[] Tint(uint color) => [(color >> 16 & 0xFF) / 255.0f, (color >> 8 & 0xFF) / 255.0f, (color & 0xFF) / 255.0f];
@@ -267,9 +268,23 @@ public partial class DungeonApp
         return plate;
     }
 
+    /// <summary>
+    /// The part of the screen the system bars and cutouts leave free, in points, as DrawnUI measures it (0 on the web
+    /// and the desktop): the 3D view and the post effect fill the whole screen, the HUD, the texts and the dialogs
+    /// stay inside.
+    /// </summary>
+    static Thickness SafeInsets => new(Super.Screen.LeftInset, Super.Screen.TopInset, Super.Screen.RightInset, Super.Screen.BottomInset);
+
+    void ApplySafeInsets()
+    {
+        _safe.Margin = SafeInsets;
+        _canvasWidth = -1; // the sizes that follow the free width are set again at the next frame
+    }
+
     /// <summary>The whole tree: the shell, its root layer and everything over the game.</summary>
     public SkiaControl Build()
     {
+        Super.InsetsChanged += (s, e) => MainThread.BeginInvokeOnMainThread(ApplySafeInsets);
         _post = new SkiaShaderEffect { ShaderCode = Shaders.POST }
             .SetUniform("uFx2", _uFx2)
             .SetUniform("uRay", 1.0f, 0.55f, 0.22f)
@@ -287,246 +302,250 @@ public partial class DungeonApp
             .SetUniform("uBurn", _uBurn)
             .OnShaderError((me, error) => Console.WriteLine($"dungeon: curtain SkSL: {error}"));
 
-        return new SkiaShell
+        // the dialogs open over it: a SkiaShell's popups (DungeonApp.Shell.cs)
+        return Shell(new SkiaLayer
         {
-            HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            RootContent = new SkiaLayer
+            Children = new List<SkiaControl>
             {
-                VerticalOptions = LayoutOptions.Fill,
-                Children = new List<SkiaControl>
+                // The game takes every press that lands on it, so what is tapped lies over it, not in it.
+                new DungeonGame(this)
                 {
-                    // The game takes every press that lands on it, so what is tapped lies over it, not in it.
-                    new DungeonGame(this)
+                    Children = new List<SkiaControl>
                     {
-                        Children = new List<SkiaControl>
+                        // Draws every frame: no cache. The post effect reads what it drew.
+                        new Scene
                         {
-                            // Draws every frame: no cache. The post effect reads what it drew.
-                            new Scene
-                            {
-                                HorizontalOptions = LayoutOptions.Fill,
-                                VerticalOptions = LayoutOptions.Fill,
-                                VisualEffects = { _post },
-                            }.Assign(out _scene),
-                        },
-                    }.Assign(out _game),
+                            HorizontalOptions = LayoutOptions.Fill,
+                            VerticalOptions = LayoutOptions.Fill,
+                            VisualEffects = { _post },
+                        }.Assign(out _scene),
+                    },
+                }.Assign(out _game),
 
-                    // The health, top center: ten slanted cells, one per tenth. One cached image, drawn again only
-                    // when the health changes.
-                    new SkiaStack
+                // The HUD, the title and the texts stay out of the system bars and cutouts (ApplySafeInsets).
+                new SkiaLayer
+                {
+                    VerticalOptions = LayoutOptions.Fill,
+                    Children = new List<SkiaControl>
                     {
-                        Spacing = 7,
-                        WidthRequest = 266,
-                        HorizontalOptions = LayoutOptions.Center,
-                        Margin = new Thickness(0, 16, 0, 0),
-                        Opacity = 0,
-                        InputTransparent = true,
-                        UseCache = SkiaCacheType.GPU,
-                        // Read as one value, said again when it changes.
-                        AccessibilityRole = Aria.RoleStatus,
-                        AccessibilityLabel = "Health 100 percent",
-                        AccessibilityLive = "polite",
-                        Children = new List<SkiaControl>
+                        // The health, top center: ten slanted cells, one per tenth. One cached image, drawn again only
+                        // when the health changes.
+                        new SkiaStack
                         {
-                            new SkiaRow
+                            Spacing = 7,
+                            WidthRequest = 266,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Margin = new Thickness(0, 16, 0, 0),
+                            Opacity = 0,
+                            InputTransparent = true,
+                            UseCache = SkiaCacheType.GPU,
+                            // Read as one value, said again when it changes.
+                            AccessibilityRole = Aria.RoleStatus,
+                            AccessibilityLabel = "Health 100 percent",
+                            AccessibilityLive = "polite",
+                            Children = new List<SkiaControl>
                             {
-                                Spacing = 5,
-                                Children = Enumerable.Range(0, 10).Select(i => (SkiaControl)new SkiaShape
+                                new SkiaRow
                                 {
-                                    WidthRequest = 22,
-                                    HeightRequest = 14,
-                                    CornerRadius = 1,
-                                    SkewX = -18,
-                                    BackgroundColor = C(GOOD),
-                                    StrokeColor = C(0x66FF_FFFF),
-                                    StrokeWidth = 1,
-                                    Shadows = new List<SkiaShadow> { new() { Color = C(GOOD), X = 0, Y = 0, Blur = 7, Opacity = 0.9 } },
-                                }.Assign(out _cells[i])).ToList(),
-                            },
-                        },
-                    }.Assign(out _hud),
-
-                    new SkiaLabelFps
-                    {
-                        FontSize = 12,
-                        Padding = new Thickness(8, 4, 8, 4),
-                        Margin = new Thickness(16, 16, 0, 0),
-                        HorizontalOptions = LayoutOptions.Start,
-                        VerticalOptions = LayoutOptions.Start,
-                    }.Assign(out _fps),
-
-                    // The distance, top left, in steps of ten meters: quiet (soft white, no glow) so it does not pull
-                    // the eye from the run; an orb makes it jump in a violet flash (FlashScore).
-                    new SkiaLayer
-                    {
-                        WidthRequest = 260,
-                        HeightRequest = 60,
-                        HorizontalOptions = LayoutOptions.Start,
-                        Margin = new Thickness(8, 4, 0, 0),
-                        Opacity = 0,
-                        InputTransparent = true,
-                        UseCache = SkiaCacheType.GPU,
-                        Children = new List<SkiaControl>
-                        {
-                            new SkiaLabel("0 M")
-                            {
-                                FontFamily = "FontScore",
-                                FontSize = 30,
-                                TextColor = C(0xCCFF_FFFF),
-                                StrokeColor = C(0x9900_0000),
-                                StrokeWidth = 1,
-                                AnchorX = 0,
-                                AnchorY = 0,
-                                Margin = new Thickness(14, 8, 0, 0),
-                            }.Assign(out _score),
-                        },
-                    }.Assign(out _scoreBox),
-
-                    new SkiaLabel("x2")
-                    {
-                        FontFamily = "FontScore",
-                        FontSize = 16,
-                        TextColor = C(0xFFC9_8BFF),
-                        Margin = new Thickness(23, 52, 0, 0),
-                        Opacity = 0,
-                        InputTransparent = true,
-                    }.Assign(out _streak),
-
-                    new SkiaRow
-                    {
-                        Spacing = 8,
-                        HorizontalOptions = LayoutOptions.End,
-                        Margin = new Thickness(0, 14, 16, 0),
-                        Children = new List<SkiaControl>
-                        {
-                            Key("?", "Help").OnTapped(me => ToggleDialog(HelpDialog)),
-                            Key("II", "Pause").OnTapped(me => Menu()),
-                        },
-                    }.Assign(out _buttons),
-
-                    // The prompt, above the middle: heavy letters in the color of what it asks, in a glow of the same
-                    // color (ShowPrompt); its own cached image under the glow shader, like the countdown.
-                    new SkiaLayer
-                    {
-                        WidthRequest = 760,
-                        HeightRequest = 110,
-                        HorizontalOptions = LayoutOptions.Center,
-                        Margin = new Thickness(0, 96, 0, 0),
-                        IsVisible = false,
-                        InputTransparent = true,
-                        UseCache = SkiaCacheType.GPU,
-                        VisualEffects = { _promptGlow },
-                        Children = new List<SkiaControl>
-                        {
-                            new SkiaLabel("")
-                            {
-                                FontFamily = "FontScore",
-                                FontSize = 44,
-                                TextColor = Colors.White,
-                                StrokeColor = C(0xFF14_0820),
-                                StrokeWidth = 2.5,
-                                HorizontalTextAlignment = DrawTextAlignment.Center,
-                                AccessibilityLive = "assertive",
-                            }.Center().Assign(out _prompt),
-                        },
-                    }.Assign(out _promptBox),
-
-                    // The countdown and GAME OVER, in the middle: heavy letters, yellow to red, in a red glow.
-                    new SkiaLayer
-                    {
-                        WidthRequest = 760,
-                        HeightRequest = 220,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        IsVisible = false,
-                        InputTransparent = true,
-                        UseCache = SkiaCacheType.GPU,
-                        VisualEffects = { _countGlow },
-                        Children = new List<SkiaControl>
-                        {
-                            new SkiaLabel("3")
-                            {
-                                FontFamily = "FontScore",
-                                FontSize = 120,
-                                TextColor = Colors.White,
-                                FillGradient = Fire(FIRE),
-                                StrokeColor = C(0xFF30_0404),
-                                StrokeWidth = 3,
-                                HorizontalTextAlignment = DrawTextAlignment.Center,
-                                AccessibilityLive = "assertive",
-                            }.Center().Assign(out _countLabel),
-                        },
-                    }.Assign(out _count),
-
-                    // Still over a scene that draws every frame: one cached image to blit.
-                    new SkiaStack
-                    {
-                        Spacing = 14,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        InputTransparent = true,
-                        UseCache = SkiaCacheType.GPU,
-                        Children = new List<SkiaControl>
-                        {
-                            // The name, white in a glow of the interface's accent color: its own cached image under
-                            // the glow shader.
-                            new SkiaLayer
-                            {
-                                HeightRequest = 120,
-                                Margin = new Thickness(0, -32, 0, -34),
-                                UseCache = SkiaCacheType.GPU,
-                                VisualEffects = { Glow(0.5f, Tint(ACCENT)) },
-                                Children = new List<SkiaControl>
-                                {
-                                    // The same heavy letters as GAME OVER, gold to amber instead of fire.
-                                    new SkiaLabel("DUNGEON RUN")
+                                    Spacing = 5,
+                                    Children = Enumerable.Range(0, 10).Select(i => (SkiaControl)new SkiaShape
                                     {
-                                        FontFamily = "FontScore",
-                                        FontSize = 44,
-                                        TextColor = Colors.White,
-                                        FillGradient = Fire(GOLD),
-                                        StrokeColor = C(0xFF2A_1404),
-                                        StrokeWidth = 2.5,
-                                        HorizontalOptions = LayoutOptions.Center,
-                                        VerticalOptions = LayoutOptions.Center,
-                                        HorizontalTextAlignment = DrawTextAlignment.Center,
-                                    }.Assign(out _name),
+                                        WidthRequest = 22,
+                                        HeightRequest = 14,
+                                        CornerRadius = 1,
+                                        SkewX = -18,
+                                        BackgroundColor = C(GOOD),
+                                        StrokeColor = C(0x66FF_FFFF),
+                                        StrokeWidth = 1,
+                                        Shadows = new List<SkiaShadow> { new() { Color = C(GOOD), X = 0, Y = 0, Blur = 7, Opacity = 0.9 } },
+                                    }.Assign(out _cells[i])).ToList(),
                                 },
                             },
-                            Centered($"DRAWNUI FOR {Framework} SAMPLE", 14, ACCENT),
-                            Centered("", 11, ACCENT).WithVisibility(false).Assign(out _best),
-                            Centered("TAP OR PRESS SPACE TO PLAY", 11, 0x99FF_FFFF),
-                        },
-                    }.Assign(out _title),
+                        }.Assign(out _hud),
 
-                    Centered("", 11, 0x99FF_FFFF).Adapt(me =>
-                    {
-                        me.VerticalOptions = LayoutOptions.Center;
-                        me.Margin = new Thickness(0, 110, 0, 0);
-                        me.TranslationY = -GAME_OVER_LIFT;
-                        me.Opacity = 0;
-                        me.InputTransparent = true;
-                    }).Assign(out _restart),
+                        new SkiaLabelFps
+                        {
+                            FontSize = 12,
+                            Padding = new Thickness(8, 4, 8, 4),
+                            Margin = new Thickness(16, 16, 0, 0),
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Start,
+                        }.Assign(out _fps),
 
-                    new SkiaLayer
-                    {
-                        VerticalOptions = LayoutOptions.Fill,
-                        IsVisible = false,
-                        InputTransparent = true,
-                        VisualEffects = { _curtainEffect },
-                    }.Assign(out _curtain),
+                        // The distance, top left, in steps of ten meters: quiet (soft white, no glow) so it does not pull
+                        // the eye from the run; an orb makes it jump in a violet flash (FlashScore).
+                        new SkiaLayer
+                        {
+                            WidthRequest = 260,
+                            HeightRequest = 60,
+                            HorizontalOptions = LayoutOptions.Start,
+                            Margin = new Thickness(8, 4, 0, 0),
+                            Opacity = 0,
+                            InputTransparent = true,
+                            UseCache = SkiaCacheType.GPU,
+                            Children = new List<SkiaControl>
+                            {
+                                new SkiaLabel("0 M")
+                                {
+                                    FontFamily = "FontScore",
+                                    FontSize = 30,
+                                    TextColor = C(0xCCFF_FFFF),
+                                    StrokeColor = C(0x9900_0000),
+                                    StrokeWidth = 1,
+                                    AnchorX = 0,
+                                    AnchorY = 0,
+                                    Margin = new Thickness(14, 8, 0, 0),
+                                }.Assign(out _score),
+                            },
+                        }.Assign(out _scoreBox),
 
-                    new SkiaBackdrop
-                    {
-                        Blur = 1.5,
-                        BackgroundColor = C(0x7300_0000),
-                        HorizontalOptions = LayoutOptions.Fill,
-                        VerticalOptions = LayoutOptions.Fill,
-                        InputTransparent = true,
-                        IsVisible = false,
-                    }.Assign(out _veil),
-                },
+                        new SkiaLabel("x2")
+                        {
+                            FontFamily = "FontScore",
+                            FontSize = 16,
+                            TextColor = C(0xFFC9_8BFF),
+                            Margin = new Thickness(23, 52, 0, 0),
+                            Opacity = 0,
+                            InputTransparent = true,
+                        }.Assign(out _streak),
+
+                        new SkiaRow
+                        {
+                            Spacing = 8,
+                            HorizontalOptions = LayoutOptions.End,
+                            Margin = new Thickness(0, 14, 16, 0),
+                            Children = new List<SkiaControl>
+                            {
+                                Key("?", "Help").OnTapped(me => ToggleDialog(HelpDialog)),
+                                Key("II", "Pause").OnTapped(me => Menu()),
+                            },
+                        }.Assign(out _buttons),
+
+                        // The prompt, above the middle: heavy letters in the color of what it asks, in a glow of the same
+                        // color (ShowPrompt); its own cached image under the glow shader, like the countdown.
+                        new SkiaLayer
+                        {
+                            WidthRequest = 760,
+                            HeightRequest = 110,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Margin = new Thickness(0, 96, 0, 0),
+                            IsVisible = false,
+                            InputTransparent = true,
+                            UseCache = SkiaCacheType.GPU,
+                            VisualEffects = { _promptGlow },
+                            Children = new List<SkiaControl>
+                            {
+                                new SkiaLabel("")
+                                {
+                                    FontFamily = "FontScore",
+                                    FontSize = 44,
+                                    TextColor = Colors.White,
+                                    StrokeColor = C(0xFF14_0820),
+                                    StrokeWidth = 2.5,
+                                    HorizontalTextAlignment = DrawTextAlignment.Center,
+                                    AccessibilityLive = "assertive",
+                                }.Center().Assign(out _prompt),
+                            },
+                        }.Assign(out _promptBox),
+
+                        // The countdown and GAME OVER, in the middle: heavy letters, yellow to red, in a red glow.
+                        new SkiaLayer
+                        {
+                            WidthRequest = 760,
+                            HeightRequest = 220,
+                            HorizontalOptions = LayoutOptions.Center,
+                            VerticalOptions = LayoutOptions.Center,
+                            IsVisible = false,
+                            InputTransparent = true,
+                            UseCache = SkiaCacheType.GPU,
+                            VisualEffects = { _countGlow },
+                            Children = new List<SkiaControl>
+                            {
+                                new SkiaLabel("3")
+                                {
+                                    FontFamily = "FontScore",
+                                    FontSize = 120,
+                                    TextColor = Colors.White,
+                                    FillGradient = Fire(FIRE),
+                                    StrokeColor = C(0xFF30_0404),
+                                    StrokeWidth = 3,
+                                    HorizontalTextAlignment = DrawTextAlignment.Center,
+                                    AccessibilityLive = "assertive",
+                                }.Center().Assign(out _countLabel),
+                            },
+                        }.Assign(out _count),
+
+                        // Still over a scene that draws every frame: one cached image to blit.
+                        new SkiaStack
+                        {
+                            Spacing = 14,
+                            HorizontalOptions = LayoutOptions.Center,
+                            VerticalOptions = LayoutOptions.Center,
+                            InputTransparent = true,
+                            UseCache = SkiaCacheType.GPU,
+                            Children = new List<SkiaControl>
+                            {
+                                // The name, white in a glow of the interface's accent color: its own cached image under
+                                // the glow shader.
+                                new SkiaLayer
+                                {
+                                    HeightRequest = 120,
+                                    Margin = new Thickness(0, -32, 0, -34),
+                                    UseCache = SkiaCacheType.GPU,
+                                    VisualEffects = { Glow(0.5f, Tint(ACCENT)) },
+                                    Children = new List<SkiaControl>
+                                    {
+                                        // The same heavy letters as GAME OVER, gold to amber instead of fire.
+                                        new SkiaLabel("DUNGEON RUN")
+                                        {
+                                            FontFamily = "FontScore",
+                                            FontSize = 44,
+                                            TextColor = Colors.White,
+                                            FillGradient = Fire(GOLD),
+                                            StrokeColor = C(0xFF2A_1404),
+                                            StrokeWidth = 2.5,
+                                            HorizontalOptions = LayoutOptions.Center,
+                                            VerticalOptions = LayoutOptions.Center,
+                                            HorizontalTextAlignment = DrawTextAlignment.Center,
+                                        }.Assign(out _name),
+                                    },
+                                },
+                                Centered($"DRAWNUI FOR {Framework} SAMPLE", 14, ACCENT),
+                                Centered("", 11, ACCENT).WithVisibility(false).Assign(out _best),
+                                Centered("TAP OR PRESS SPACE TO PLAY", 11, 0x99FF_FFFF),
+                            },
+                        }.Assign(out _title),
+
+                        Centered("", 11, 0x99FF_FFFF).Adapt(me =>
+                        {
+                            me.VerticalOptions = LayoutOptions.Center;
+                            me.Margin = new Thickness(0, 110, 0, 0);
+                            me.TranslationY = -GAME_OVER_LIFT;
+                            me.Opacity = 0;
+                            me.InputTransparent = true;
+                        }).Assign(out _restart),
+                    },
+                }.Adapt(me => me.Margin = SafeInsets).Assign(out _safe),
+
+                new SkiaLayer
+                {
+                    VerticalOptions = LayoutOptions.Fill,
+                    IsVisible = false,
+                    InputTransparent = true,
+                    VisualEffects = { _curtainEffect },
+                }.Assign(out _curtain),
+
+                new SkiaBackdrop
+                {
+                    Blur = 1.5,
+                    BackgroundColor = C(0x7300_0000),
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
+                    InputTransparent = true,
+                    IsVisible = false,
+                }.Assign(out _veil),
             },
-        }.Assign(out _shell).Adapt(me => me.Navigated += (s, e) => ShellChanged());
+        });
     }
 }

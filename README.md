@@ -129,7 +129,13 @@ dotnet run --project src/Dungeon.OpenTk
 dotnet run --project src/Dungeon.Wpf
 ```
 
-The OpenTK head runs on Windows and Linux, the WPF head on Windows. One exe that needs no .NET installed:
+The OpenTK head runs on Windows and Linux, the WPF head on Windows.
+
+On Android (a device or an emulator), with the .NET MAUI workload:
+
+``````
+dotnet build src/Dungeon.Maui -t:Run -f net10.0-android
+`````` One exe that needs no .NET installed:
 `dotnet publish src/Dungeon.OpenTk -c Release -r win-x64 -o publish` (or `-r linux-x64`).
 
 Run the tests:
@@ -145,6 +151,7 @@ dotnet test tests/Dungeon.Tests
 - `src/Dungeon.Blazor`: the browser head on DrawnUi.Blazor (Blazor WebAssembly).
 - `src/Dungeon.OpenTk`: the desktop head on DrawnUi.OpenTk (an OpenTK window, Windows and Linux).
 - `src/Dungeon.Wpf`: the desktop head on DrawnUi.Wpf (a WPF window, Windows).
+- `src/Dungeon.Maui`: the .NET MAUI head on DrawnUi.Maui (Android).
 - `tests/Dungeon.Tests`: tests of the rules of the run.
 - `tools/Dungeon.Profile`: a headless profile of the frame's allocations on DrawnUi.Net.
 

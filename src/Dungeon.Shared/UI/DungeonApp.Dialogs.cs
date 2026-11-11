@@ -14,7 +14,7 @@ public partial class DungeonApp
     /// <summary>A dialog over the run stops it.</summary>
     void ShellChanged()
     {
-        _paused = _shell.PopupsCount > 0;
+        _paused = PopupsCount > 0;
         _held = 0;
         _veil.IsVisible = _paused;
         // Under a dialog the HUD's buttons are gone, so Tab stays in the dialog.
@@ -24,14 +24,14 @@ public partial class DungeonApp
     void OpenDialog(Func<SkiaControl> dialog)
     {
         var content = dialog();
-        _ = _shell.OpenPopupAsync(content, showOverlay: false);
+        ShowPopup(content);
         // the popup is in the shell's list at once: the run stops now, not after the popup's animation
         ShellChanged();
     }
 
     void ClosePopup(bool animated)
     {
-        _ = _shell.ClosePopupAsync(animated);
+        HidePopup(animated);
     }
 
     /// <summary>
@@ -75,6 +75,8 @@ public partial class DungeonApp
         {
             WidthRequest = width,
             HorizontalOptions = LayoutOptions.Center,
+            // centered in what the system bars and cutouts leave free
+            Margin = SafeInsets,
             AccessibilityRole = Aria.RoleDialog,
             AccessibilityLabel = title,
             Children = new List<SkiaControl>

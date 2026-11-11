@@ -17,6 +17,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Tick.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Dialogs.cs" />
+    <!-- the drawn SkiaShell of the .NET heads; the MAUI head brings its own host (MAUI's SkiaShell is a page) -->
+    <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Shell.cs" Condition="'$(UseMaui)' != 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\Plate.cs" />
   </ItemGroup>
 </Project>
