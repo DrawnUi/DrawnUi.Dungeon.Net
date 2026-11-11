@@ -102,7 +102,7 @@ Both hold 60 FPS. Scene build (CPU projection, ~490 triangles on the title) abou
 
 | What | .NET | Rust | Status |
 |---|---|---|---|
-| GLOW over GAME OVER (fixed input, 256x160) | the glow itself matches; the text sits 1 px lower | 1 px higher | engine difference in label line height: .NET rounds the line height (48 for Orbitron 38) and puts the baseline at its bottom minus the descent, 0.35 px lower than Rust's unrounded line; Skia then rounds the glyphs to whole pixels. Reported |
+| GLOW over GAME OVER (fixed input, 256x160) | pixel-identical to Rust (mean difference 0.00, worst 0.0, 5x5 windows; GAME OVER rows 44-70 and 92-118 in both) | DrawnUi.Rust main 00d685d, which follows the .NET label rules | done: Rust now uses .NET's label line height |
 | desktop window size on a scaled display | OpenTK: 1100x700 pixels, the canvas at scale 1 (the OpenTK head draws 1 point = 1 pixel), so the same 1100x700 points as Rust but physically smaller at 125 %; WPF: 1100x700 points | 1100x700 points | head rule of DrawnUi.OpenTk, the layout is the same |
 | frame cost | 7.5-8.5 ms main thread per frame (Debug, interpreted) | 0.7-1 ms | both 60 FPS |
 | pause dialog on a 400 pt wide screen | HELP and HOME on line 1, RESUME on line 2 at the left of the centered block; one centered line on desktop | the same (Rust 004e49d) | resolved: both games use a SkiaWrap (Nick's order), checked at 400x760 and 1280x760 |
