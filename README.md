@@ -121,6 +121,27 @@ Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run.
 
 [PARITY.md](PARITY.md) lists every feature of the Rust game and where it is here.
 
+## Create With AI
+
+DrawnUI comes with ready skills for AI coding agents. Give your agent the skills and it writes DrawnUI code the way
+the engine expects: controls, layouts, caching, game loops, shaders, meshes, the web head.
+
+This port was made with an AI coding agent. It read the Rust game and rebuilt it in C#, screen by screen, with these
+skills:
+
+- [drawnui](https://drawnui.net/skills/drawnui/SKILL.md): the framework, controls, layouts, caching, gestures.
+- [drawnui-fluent](https://drawnui.net/skills/drawnui-fluent/SKILL.md): building the UI in fluent C#.
+- [drawnui-game](https://drawnui.net/skills/drawnui-game/SKILL.md): the game loop, input and game patterns on
+  `DrawnGame`.
+- [drawnui-web-app](https://drawnui.net/skills/drawnui-web-app/SKILL.md): the pure WebAssembly head on DrawnUi.Web.
+- [skmech](https://drawnui.net/skills/skmech/SKILL.md): `SKMesh` with SkSL, specification, buffers, `DrawMesh` and
+  the traps.
+- [drawnui-port-net-to-rust](https://hellorust.drawnui.net/skills/drawnui-port-net-to-rust/SKILL.md): the C# and
+  Rust mapping, read the other way round to port Rust to C#.
+
+To install a skill for Claude Code, save it as `~/.claude/skills/<name>/SKILL.md` (or in your agent's skill or rules
+folder). Every DrawnUI skill is listed at https://drawnui.net/llms.txt.
+
 ## Credits and license
 
 The game is ported from the Dungeon Run example of
