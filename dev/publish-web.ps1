@@ -15,7 +15,9 @@ $pages = @{ Web = 'dungeonnet-drawnui'; Blazor = 'dungeonblazor-drawnui' }[$Head
 if (-not $Out) {
     $Out = Join-Path ([IO.Path]::GetTempPath()) "dungeon-pub/$Head"
     if (Test-Path $Out) { Remove-Item -Recurse -Force $Out }
-    dotnet publish (Join-Path $root $project) -c Release -o $Out -nologo
+    # No AOT for the site: an AOT dotnet.native.wasm (46 MB) is over Cloudflare Pages' 25 MiB per-file limit.
+    # The interpreted Release build holds 60 FPS in the game (the Web head is interpreted too).
+    dotnet publish (Join-Path $root $project) -c Release -o $Out -nologo -p:RunAOTCompilation=false
     if ($LASTEXITCODE -ne 0) { throw "publish failed" }
 }
 $site = Join-Path $Out 'wwwroot'
