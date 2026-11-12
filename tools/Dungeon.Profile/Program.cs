@@ -14,7 +14,7 @@ namespace DungeonRun;
 
 /// <summary>
 /// Renders the game headless and reports per frame: managed bytes allocated, time, and the types the allocations
-/// were sampled in (GCAllocationTick, one sample per ~100 KB). Usage: Dungeon.Profile [frames] [run].
+/// were sampled in (GCAllocationTick, one sample per ~100 KB). Usage: Dungeon.Profile [frames] [run], or shot (see Shot).
 /// </summary>
 public static class Program
 {
@@ -40,6 +40,12 @@ public static class Program
         if (args.Contains("effect"))
         {
             EffectOnly(frames);
+            return;
+        }
+
+        if (args.Contains("shot"))
+        {
+            Shot(args, run);
             return;
         }
 
@@ -88,6 +94,36 @@ public static class Program
         Console.WriteLine("cache records:");
         foreach (var (name, count) in records.OrderByDescending(x => x.Value).Take(20))
             Console.WriteLine($"  {count,6}  {name}");
+    }
+
+    /// <summary>
+    /// One frame of the game as a PNG, the same pixels on every run (fixed 16 ms steps, no randomness): to check that a
+    /// shader change leaves the picture identical. Usage: Dungeon.Profile 0 [run] shot WIDTH HEIGHT FRAMES
+    /// OUT.png [z DISTANCE]. With run the run starts at frame 30; z moves the runner there just before the
+    /// frame (2850: the daylight from the exit, 2990: the world outside). The scene is drawn only on the last frame,
+    /// so a long run takes seconds.
+    /// </summary>
+    static void Shot(string[] args, bool run)
+    {
+        int at = Array.IndexOf(args, "shot");
+        int z = Array.IndexOf(args, "z");
+        using var host = new HeadlessCanvasHost(int.Parse(args[at + 1]), int.Parse(args[at + 2]), 1.0f, Colors.Black);
+        var app = new DungeonApp();
+        host.Canvas.Content = app.Build();
+        int frames = int.Parse(args[at + 3]);
+        var scene = (Scene)typeof(DungeonApp).GetField("_scene", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(app);
+        for (int i = 0; i < frames; i++)
+        {
+            scene.IsVisible = i == frames - 1;
+            if (z > 0 && i == frames - 3)
+                scene.World.Z = double.Parse(args[z + 1], System.Globalization.CultureInfo.InvariantCulture);
+            if (run && i == 30)
+                app.KeyDown(InputKey.Space);
+            if (run && i > 240 && i % 30 == 0)
+                app.KeyDown(InputKey.ArrowUp);
+            host.RenderFrame(16.0);
+        }
+        host.SavePng(args[at + 4]);
     }
 
     /// <summary>
