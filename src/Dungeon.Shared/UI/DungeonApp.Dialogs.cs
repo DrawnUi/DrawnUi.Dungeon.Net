@@ -191,7 +191,7 @@ public partial class DungeonApp
 
     /// <summary>
     /// A link of the help, opened in the browser: in the link's blue, lighter and underlined under the mouse or when
-    /// tapped.
+    /// tapped. A tap lights it for 0.3 s: a touch has no mouse leaving it, so it goes back to rest by itself.
     /// </summary>
     static SkiaLabel Link(string text, string url) => new SkiaLabel
     {
@@ -200,19 +200,24 @@ public partial class DungeonApp
         Spans = { new TextSpan { Text = text } },
         AccessibilityRole = Aria.RoleLink,
     }
-    .OnHovered((me, on) =>
-    {
-        me.TextColor = C(on ? LINK_HOVER : LINK);
-        me.Spans.Clear();
-        me.Spans.Add(new TextSpan { Text = text, Underline = on });
-    })
+    .OnHovered((me, on) => LinkLit(me, text, on))
     .OnTapped(me =>
     {
-        me.TextColor = C(LINK_HOVER);
-        me.Spans.Clear();
-        me.Spans.Add(new TextSpan { Text = text, Underline = true });
+        LinkLit(me, text, true);
         Super.OpenLink(url);
+        _ = Task.Delay(300).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (!me.IsHovered)
+                LinkLit(me, text, false);
+        }));
     });
+
+    static void LinkLit(SkiaLabel link, string text, bool lit)
+    {
+        link.TextColor = C(lit ? LINK_HOVER : LINK);
+        link.Spans.Clear();
+        link.Spans.Add(new TextSpan { Text = text, Underline = lit });
+    }
 
     /// <summary>
     /// What to do, what not to do, and only then the controls: keyboard, then touch and mouse. The text scrolls when
