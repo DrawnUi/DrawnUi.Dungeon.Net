@@ -144,7 +144,7 @@ dotnet build src/Dungeon.Maui -t:Run -f net10.0-android
 On a Mac with Xcode and the .NET MAUI workload, the iOS simulator and Mac Catalyst need no signing setup:
 
 ```
-dotnet build src/Dungeon.Maui -t:Run -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64
+dotnet build src/Dungeon.Maui -t:"Build;Run" -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64
 dotnet run --project src/Dungeon.Maui -f net10.0-maccatalyst
 ```
 
@@ -155,7 +155,7 @@ On an iPhone, the build signs with the Apple development identity your Mac has. 
 line:
 
 ```
-dotnet build src/Dungeon.Maui -t:Run -f net10.0-ios -p:RuntimeIdentifier=ios-arm64 -p:_DeviceName=<UDID> -p:CodesignKey="Apple Development: Your Name (XXXXXXXXXX)"
+dotnet build src/Dungeon.Maui -t:"Build;Run" -f net10.0-ios -p:RuntimeIdentifier=ios-arm64 -p:_DeviceName=<UDID> -p:CodesignKey="Apple Development: Your Name (XXXXXXXXXX)"
 ```
 
 or once, in a file of your own: copy `src/Dungeon.Maui/Signing.local.props.example` to
