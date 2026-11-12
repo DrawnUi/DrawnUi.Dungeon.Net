@@ -98,6 +98,9 @@ public partial class DungeonApp
                 }.UpdateNonStop(), // its time runs while it is open
                 new SkiaStack
                 {
+                    // the texts and their glows do not change while the panel's shader runs under them every frame:
+                    // one image, made again only when a button or a link in it changes
+                    UseCache = SkiaCacheType.GPU,
                     Spacing = 9,
                     Margin = new Thickness(DIALOG_GLOW),
                     Padding = new Thickness(_narrow ? 14 : 24),
