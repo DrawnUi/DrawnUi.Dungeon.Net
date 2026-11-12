@@ -39,8 +39,16 @@ function Stamp([string] $file, [string] $pattern, [string] $target) {
 if ($Head -eq 'Web') {
     $main = Join-Path $site 'main.js'
     Stamp $main './_framework/dotnet.js' '_framework/dotnet.js'
-    Stamp $main './_content/DrawnUi.Web/drawnui-web.js' '_content/DrawnUi.Web/drawnui-web.js'
-    Stamp (Join-Path $site 'index.html') './main.js' 'main.js'
+    $index = Join-Path $site 'index.html'
+    Stamp $index './main.js' 'main.js'
+    # drawnui-web.js is imported twice, by main.js and by DrawnUi.Web's C# (JSHost.ImportAsync, by its plain path):
+    # both must load ONE module, or the canvas's input and resize callbacks go to a second copy no one wired. An
+    # import map stamps that one URL for both imports.
+    $web = './_content/DrawnUi.Web/drawnui-web.js'
+    $map = "<script type=`"importmap`">{ `"imports`": { `"$web`": `"$web`?v=$(Hash (Join-Path $site '_content/DrawnUi.Web/drawnui-web.js'))`" } }</script>"
+    $text = [IO.File]::ReadAllText($index)
+    [IO.File]::WriteAllText($index, ($text -replace '(\s*)(<script type="module")', "`$1$map`$1`$2"))
+    Remove-Item "$index.br", "$index.gz" -ErrorAction SilentlyContinue
 }
 
 # The page and the unhashed entry scripts are revalidated on every load.
