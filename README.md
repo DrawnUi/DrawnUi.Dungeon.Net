@@ -161,11 +161,9 @@ Works: the whole run (rules, mesh, lighting, fog, lava, ghosts, power-ups, the e
 effect, the HUD, the prompts and lessons, the countdown, GAME OVER and its burning curtain, the title's own run,
 keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and the screen-reader tree.
 
-Still being ported: nothing of the game; what differs from the Rust original is listed at the end of PARITY.md.
+It plays the same as the Rust original: the same rules, shaders, screens and texts.
 
 Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor) and on both desktop heads (OpenTK and WPF, Release).
-
-[PARITY.md](PARITY.md) lists every feature of the Rust game and where it is here.
 
 ## Create With AI
 
