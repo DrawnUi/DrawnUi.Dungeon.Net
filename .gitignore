@@ -5,3 +5,4 @@ obj/
 src/Dungeon.Web/Probes/
 
 .wrangler/
+src/Dungeon.Maui/Signing.local.props

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0-android</TargetFrameworks>
+        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 
         <ApplicationId>net.drawnui.dungeonrun</ApplicationId>
         <ApplicationTitle>Dungeon Run</ApplicationTitle>
@@ -20,7 +20,18 @@
 
         <!-- Google Play takes API 24 and up -->
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+        <!-- the minimum DrawnUi.Maui supports -->
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.2</SupportedOSPlatformVersion>
     </PropertyGroup>
+
+    <!--
+    No signing settings here: a Debug build for the iOS simulator or Mac Catalyst needs none, and a Debug build for an
+    iPhone signs with the developer identity the Mac has (automatic selection). To sign with your own identity, pass
+    -p:CodesignKey=... -p:CodesignProvision=... on the command line, or copy Signing.local.props.example to
+    Signing.local.props next to this file (it is ignored by git).
+    -->
+    <Import Project="Signing.local.props" Condition="Exists('Signing.local.props')" />
 
     <ItemGroup>
         <!-- the DrawnUI icon, as the game's other heads (favicon.ico, icon.ico) -->

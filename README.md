@@ -3,7 +3,7 @@
 Dungeon Run is a first-person dungeon runner you play in the browser. It is a port of the
 [DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look, with no 3D
 API, only Skia 2D. It runs in the browser (pure .NET WebAssembly and Blazor), on the desktop (OpenTK and WPF) and on
-Android (.NET MAUI).
+Android, iPhone, iPad and Mac (.NET MAUI).
 
 Play it: [dungeonnet.drawnui.net](https://dungeonnet.drawnui.net) (.NET WebAssembly) or
 [dungeonblazor.drawnui.net](https://dungeonblazor.drawnui.net) (Blazor).
@@ -141,6 +141,29 @@ On Android (a device or an emulator), with the .NET MAUI workload:
 dotnet build src/Dungeon.Maui -t:Run -f net10.0-android
 ```
 
+On a Mac with Xcode and the .NET MAUI workload, the iOS simulator and Mac Catalyst need no signing setup:
+
+```
+dotnet build src/Dungeon.Maui -t:Run -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64
+dotnet build src/Dungeon.Maui -t:Run -f net10.0-maccatalyst
+```
+
+(`iossimulator-x64` on an Intel Mac; pick a simulator with `-p:_DeviceName=:v2:udid=<UDID>` from
+`xcrun simctl list devices available`.)
+
+On an iPhone, the build signs with the Apple development identity your Mac has. Name your own identity on the command
+line:
+
+```
+dotnet build src/Dungeon.Maui -t:Run -f net10.0-ios -p:RuntimeIdentifier=ios-arm64 -p:_DeviceName=<UDID> -p:CodesignKey="Apple Development: Your Name (XXXXXXXXXX)"
+```
+
+or once, in a file of your own: copy `src/Dungeon.Maui/Signing.local.props.example` to
+`src/Dungeon.Maui/Signing.local.props` (git ignores it) and fill it in. Your identities: `security find-identity -v -p
+codesigning`; your phone's UDID: `xcrun devicectl list devices`. The app id is `net.drawnui.dungeonrun`: your team needs a
+development provisioning profile that covers it (Xcode makes one when you let it manage signing for that id, or use a
+wildcard profile and add `-p:CodesignProvision="<profile name>"`).
+
 One desktop exe that needs no .NET installed:
 
 ```
@@ -165,7 +188,7 @@ dotnet test tests/Dungeon.Tests
 - `src/Dungeon.Blazor`: the browser head on DrawnUi.Blazor (Blazor WebAssembly).
 - `src/Dungeon.OpenTk`: the desktop head on DrawnUi.OpenTk (an OpenTK window, Windows and Linux).
 - `src/Dungeon.Wpf`: the desktop head on DrawnUi.Wpf (a WPF window, Windows).
-- `src/Dungeon.Maui`: the .NET MAUI head on DrawnUi.Maui (Android).
+- `src/Dungeon.Maui`: the .NET MAUI head on DrawnUi.Maui (Android, iOS, Mac Catalyst).
 - `tests/Dungeon.Tests`: tests of the rules of the run.
 - `tools/Dungeon.Profile`: a headless profile of the frame's allocations on DrawnUi.Net.
 

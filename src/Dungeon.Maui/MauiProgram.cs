@@ -12,7 +12,7 @@ using DrawnUi.Models;
 
 namespace DungeonRun;
 
-/// <summary>Dungeon Run on .NET MAUI (Android): the fonts through the MAUI font pipeline, the game in one page.</summary>
+/// <summary>Dungeon Run on .NET MAUI (Android, iOS, Mac Catalyst): the fonts through the MAUI font pipeline, the game in one page.</summary>
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -32,7 +32,14 @@ public static class MauiProgram
                 fonts.AddFont("NotoSansMathSymbols-Subset.ttf", DungeonApp.SYMBOLS);
             });
 
-        builder.UseDrawnUi(new DrawnUiStartupSettings());
+        builder.UseDrawnUi(new DrawnUiStartupSettings
+        {
+#if MACCATALYST
+            // the keys of the desktop heads (arrows, Space, Escape) and their window: 1100x700 points
+            UseDesktopKeyboard = true,
+            DesktopWindow = new() { Width = 1100, Height = 700 },
+#endif
+        });
 
         return builder.Build();
     }
