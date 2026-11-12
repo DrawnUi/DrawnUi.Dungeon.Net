@@ -2,7 +2,11 @@
 
 Dungeon Run is a first-person dungeon runner you play in the browser. It is a port of the
 [DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look, with no 3D
-API, only Skia 2D. It runs as pure .NET WebAssembly (DrawnUi.Web).
+API, only Skia 2D. It runs in the browser (pure .NET WebAssembly and Blazor), on the desktop (OpenTK and WPF) and on
+Android (.NET MAUI).
+
+Play it: [dungeonnet.drawnui.net](https://dungeonnet.drawnui.net) (.NET WebAssembly) or
+[dungeonblazor.drawnui.net](https://dungeonblazor.drawnui.net) (Blazor).
 
 This demo shows a full 3D world painted by SkSL shaders in a .NET app. One `SKMesh` carries the scene's triangles
 (floor, walls, pillars, sprites) and tells each pixel which surface it is on; the shaders do all the painting.
@@ -133,10 +137,20 @@ The OpenTK head runs on Windows and Linux, the WPF head on Windows.
 
 On Android (a device or an emulator), with the .NET MAUI workload:
 
-``````
+```
 dotnet build src/Dungeon.Maui -t:Run -f net10.0-android
-`````` One exe that needs no .NET installed:
-`dotnet publish src/Dungeon.OpenTk -c Release -r win-x64 -o publish` (or `-r linux-x64`).
+```
+
+One desktop exe that needs no .NET installed:
+
+```
+dotnet publish src/Dungeon.OpenTk -c Release -r win-x64 -o publish
+```
+
+(or `-r linux-x64`).
+
+Every head shows the framework's name in the bottom right corner. Set `DungeonApp.ShowWatermark = false;` before the
+game is built to hide it, for example for clean captures.
 
 Run the tests:
 
@@ -163,7 +177,8 @@ keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and th
 
 It plays the same as the Rust original: the same rules, shaders, screens and texts.
 
-Frame rate in Chrome (Debug build): a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor) and on both desktop heads (OpenTK and WPF, Release).
+Frame rate: a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor, in Chrome) and on both
+desktop heads (OpenTK and WPF).
 
 ## Create With AI
 
