@@ -145,7 +145,7 @@ On a Mac with Xcode and the .NET MAUI workload, the iOS simulator and Mac Cataly
 
 ```
 dotnet build src/Dungeon.Maui -t:Run -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64
-dotnet build src/Dungeon.Maui -t:Run -f net10.0-maccatalyst
+dotnet run --project src/Dungeon.Maui -f net10.0-maccatalyst
 ```
 
 (`iossimulator-x64` on an Intel Mac; pick a simulator with `-p:_DeviceName=:v2:udid=<UDID>` from
