@@ -37,6 +37,9 @@ public partial class DungeonApp
         _ => "https://drawnui.net/",
     };
 
+    /// <summary>The source code of this sample, opened by the help's second link.</summary>
+    const string SourceCode = "https://github.com/DrawnUi/DrawnUi.Dungeon.Net";
+
     /// <summary>The title's gradient: gold to amber.</summary>
     static readonly uint[] GOLD = [0xFFFF_F4D0, 0xFFFF_C050, 0xFFD0_6810];
     static readonly uint[] FIRE = [0xFFFF_E870, 0xFFFF_8A20, 0xFFE0_1810];

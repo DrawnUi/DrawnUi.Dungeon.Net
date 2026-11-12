@@ -186,8 +186,30 @@ public partial class DungeonApp
         return shape;
     }
 
-    /// <summary>The help's link text, underlined under the mouse or when tapped.</summary>
-    static TextSpan LinkText(bool underline) => new() { Text = $"MADE WITH DRAWNUI FOR {Framework}", Underline = underline };
+    /// <summary>
+    /// A link of the help, opened in the browser: in the link's blue, lighter and underlined under the mouse or when
+    /// tapped.
+    /// </summary>
+    static SkiaLabel Link(string text, string url) => new SkiaLabel
+    {
+        FontSize = 11,
+        TextColor = C(LINK),
+        Spans = { new TextSpan { Text = text } },
+        AccessibilityRole = Aria.RoleLink,
+    }
+    .OnHovered((me, on) =>
+    {
+        me.TextColor = C(on ? LINK_HOVER : LINK);
+        me.Spans.Clear();
+        me.Spans.Add(new TextSpan { Text = text, Underline = on });
+    })
+    .OnTapped(me =>
+    {
+        me.TextColor = C(LINK_HOVER);
+        me.Spans.Clear();
+        me.Spans.Add(new TextSpan { Text = text, Underline = true });
+        Super.OpenLink(url);
+    });
 
     /// <summary>
     /// What to do, what not to do, and only then the controls: keyboard, then touch and mouse. The text scrolls when
@@ -195,8 +217,8 @@ public partial class DungeonApp
     /// </summary>
     SkiaControl HelpDialog()
     {
-        // What the dialog needs around the text: its glow, padding, title, last line and button.
-        float room = Math.Max(_canvasHeight - 300.0f, 110.0f);
+        // What the dialog needs around the text: its glow, padding, title, the two links and the button.
+        float room = Math.Max(_canvasHeight - 322.0f, 110.0f);
         bool narrow = _narrow;
         _helpOpen = true;
         return Dialog("HOW TO PLAY",
@@ -230,29 +252,9 @@ public partial class DungeonApp
                         },
                     },
                 },
-                // A link to DrawnUI, opened in the browser (a new tab on the web): in the link's blue, lighter and
-                // underlined under the mouse or when tapped.
-                new SkiaLabel
-                {
-                    FontSize = 11,
-                    TextColor = C(LINK),
-                    Spans = { LinkText(false) },
-                    Margin = new Thickness(0, 12, 0, 0),
-                    AccessibilityRole = Aria.RoleLink,
-                }
-                .OnHovered((me, on) =>
-                {
-                    me.TextColor = C(on ? LINK_HOVER : LINK);
-                    me.Spans.Clear();
-                    me.Spans.Add(LinkText(on));
-                })
-                .OnTapped(me =>
-                {
-                    me.TextColor = C(LINK_HOVER);
-                    me.Spans.Clear();
-                    me.Spans.Add(LinkText(true));
-                    Super.OpenLink(FrameworkDocs);
-                }),
+                // Links opened in the browser (a new tab on the web): what the game is made with, then its code.
+                Link($"MADE WITH DRAWNUI FOR {Framework}", FrameworkDocs).WithMargin(0, 12, 0, 0),
+                Link("SOURCE CODE ON GITHUB", SourceCode).WithMargin(0, 6, 0, 0),
                 Button("OK").WithHorizontalOptions(LayoutOptions.End).WithMargin(0, 6, 0, 0).OnTapped(me => CloseDialog()));
     }
 
