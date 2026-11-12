@@ -328,7 +328,13 @@ public sealed class World
     float _vy;
     int _lane;
     internal float Speed = 12.0f;
-    public float Time;
+    /// <summary>
+    /// Seconds since this run (or the title's own run) started: the clock of the animations and the shaders. It starts
+    /// again with every run and is counted in a double, so it stays a small, exact float: hours of a float clock step
+    /// in hundredths of a second, and a phone GPU's sin of hours times a frequency loses its precision.
+    /// </summary>
+    public float Time => (float)_time;
+    double _time;
     uint _orbs;
     /// <summary>1 = unhurt; a pillar takes two tenths, a beam one, lava a half; the run ends at 0.</summary>
     public float Health = 1.0f;
@@ -466,6 +472,7 @@ public sealed class World
         (Escaped, RunTime, Escape, Glare) = (false, 0.0f, 0.0f, 0.3f);
         (Shield, ShieldBurst) = (0.0f, 0.0f);
         (Streak, _lastOrb, OrbPulse) = (0u, -10L, 0.0f);
+        _time = 0.0;
         Phase = phase;
     }
 
@@ -502,7 +509,7 @@ public sealed class World
 
     public void Step(float dt, ref Input input)
     {
-        Time += dt;
+        _time += dt;
         Flash = Math.Max(Flash - dt * 1.6f, 0.0f);
         Warp = Math.Max(Warp - dt * 1.1f, 0.0f);
         Shake = Math.Max(Shake - dt * 2.5f, 0.0f);
