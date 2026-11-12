@@ -65,12 +65,36 @@
          iPhone puts the bottom of the canvas under its toolbar. */
       #app, .drawn-host { width: 100vw; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
       .drawn-host > * { flex: 1 1 auto; min-height: 0; }
-      .boot { margin: auto; color: #8a7a66; font: 14px system-ui, sans-serif; }
+      /* The loader: the game's title over a torch-lit glow, and the real download progress (Blazor sets
+         --blazor-load-percentage on the page while it fetches the app). */
+      @font-face { font-family: "Orbitron Black"; src: url("fonts/Orbitron-Black.ttf"); font-display: block; }
+      .loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                gap: 22px; background: radial-gradient(ellipse at 50% 55%, #2a1406 0%, #000 65%); }
+      .loader-title { font: 44px "Orbitron Black", system-ui, sans-serif; letter-spacing: 2px; text-align: center;
+                      background: linear-gradient(#fff4d0, #ffc050 55%, #d06810); -webkit-background-clip: text;
+                      background-clip: text; color: transparent; animation: torch 1.6s ease-in-out infinite; }
+      .loader-bar { width: min(260px, 60vw); height: 4px; border-radius: 2px; background: #2a1d10; overflow: hidden; }
+      .loader-fill { height: 100%; width: var(--blazor-load-percentage, 0%); transition: width 0.2s;
+                     background: linear-gradient(90deg, #d06810, #ffc050); box-shadow: 0 0 10px #ff8a20; }
+      .loader-text { font: 12px "Orbitron Black", system-ui, sans-serif; letter-spacing: 3px; color: #8a7a66; }
+      .loader-text::after { content: " " var(--blazor-load-percentage-text, ""); }
+      @keyframes torch {
+        0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 138, 32, 0.45)); }
+        35% { filter: drop-shadow(0 0 22px rgba(255, 138, 32, 0.8)); }
+        60% { filter: drop-shadow(0 0 14px rgba(255, 110, 20, 0.55)); }
+      }
+      @media (prefers-reduced-motion: reduce) { .loader-title { animation: none; } }
     </style>
     <script type="importmap"></script>
   </head>
   <body>
-    <div id="app"><div class="boot">Loading the dungeon…</div></div>
+    <div id="app">
+      <div class="loader" role="progressbar" aria-label="Loading Dungeon Run">
+        <div class="loader-title">DUNGEON RUN</div>
+        <div class="loader-bar"><div class="loader-fill"></div></div>
+        <div class="loader-text">LOADING</div>
+      </div>
+    </div>
     <noscript>
       <h1>Dungeon Run</h1>
       <p>

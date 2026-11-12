@@ -37,6 +37,20 @@ public partial class DungeonApp
         _ => "https://drawnui.net/",
     };
 
+    /// <summary>
+    /// The framework's name in the bottom right corner at all times, so every screenshot and video says what runs it.
+    /// Set to false to hide it (e.g. for clean captures).
+    /// </summary>
+    public static bool ShowWatermark = true;
+
+    /// <summary>The watermark's text: the framework this head runs on.</summary>
+    static string WatermarkText => Framework switch
+    {
+        ".NET" => ".NET WASM",
+        "MAUI" => ".NET MAUI",
+        _ => Framework,
+    };
+
     /// <summary>The source code of this sample, opened by the help's second link.</summary>
     const string SourceCode = "https://github.com/DrawnUi/DrawnUi.Dungeon.Net";
 
@@ -528,6 +542,21 @@ public partial class DungeonApp
                             me.Opacity = 0;
                             me.InputTransparent = true;
                         }).Assign(out _restart),
+
+                        // The framework's name, bottom right, over the post effect: faint, never read aloud.
+                        new SkiaLabel(WatermarkText)
+                        {
+                            FontSize = 22,
+                            FontFamily = "FontScore",
+                            TextColor = C(0x33FF_FFFF),
+                            HorizontalOptions = LayoutOptions.End,
+                            VerticalOptions = LayoutOptions.End,
+                            Margin = new Thickness(0, 0, 16, 12),
+                            InputTransparent = true,
+                            IsVisible = ShowWatermark,
+                            UseCache = SkiaCacheType.Image,
+                            AccessibilityRole = Aria.RolePresentation,
+                        },
                     },
                 }.Adapt(me => me.Margin = SafeInsets).Assign(out _safe),
 
