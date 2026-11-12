@@ -3,7 +3,7 @@
 Dungeon Run is a first-person dungeon runner you play in the browser. It is a port of the
 [DrawnUI for Rust example](https://run.drawnui.net) to DrawnUI for .NET: the same game and the same look, with no 3D
 API, only Skia 2D. It runs in the browser (pure .NET WebAssembly and Blazor), on the desktop (OpenTK and WPF) and on
-Android, iPhone, iPad and Mac (.NET MAUI).
+Android, iPhone, iPad, Mac and Windows (.NET MAUI).
 
 Play it: [dungeonnet.drawnui.net](https://dungeonnet.drawnui.net) (.NET WebAssembly) or
 [dungeonblazor.drawnui.net](https://dungeonblazor.drawnui.net) (Blazor).
@@ -135,6 +135,12 @@ dotnet run --project src/Dungeon.Wpf
 
 The OpenTK head runs on Windows and Linux, the WPF head on Windows.
 
+On Windows, the .NET MAUI head in a window (unpackaged, with the .NET MAUI workload):
+
+```
+dotnet build src/Dungeon.Maui -t:Run -f net10.0-windows10.0.19041.0
+```
+
 On Android (a device or an emulator), with the .NET MAUI workload:
 
 ```
@@ -188,7 +194,7 @@ dotnet test tests/Dungeon.Tests
 - `src/Dungeon.Blazor`: the browser head on DrawnUi.Blazor (Blazor WebAssembly).
 - `src/Dungeon.OpenTk`: the desktop head on DrawnUi.OpenTk (an OpenTK window, Windows and Linux).
 - `src/Dungeon.Wpf`: the desktop head on DrawnUi.Wpf (a WPF window, Windows).
-- `src/Dungeon.Maui`: the .NET MAUI head on DrawnUi.Maui (Android, iOS, Mac Catalyst).
+- `src/Dungeon.Maui`: the .NET MAUI head on DrawnUi.Maui (Android, iOS, Mac Catalyst, Windows).
 - `tests/Dungeon.Tests`: tests of the rules of the run.
 - `tools/Dungeon.Profile`: a headless profile of the frame's allocations on DrawnUi.Net.
 
@@ -201,7 +207,7 @@ keyboard, drag and tap, hover on the buttons, the help and pause dialogs, and th
 It plays the same as the Rust original: the same rules, shaders, screens and texts.
 
 Frame rate: a steady 60 FPS on the title and in a run, on both browser heads (web and Blazor, in Chrome) and on both
-desktop heads (OpenTK and WPF).
+desktop heads (OpenTK and WPF), and on the .NET MAUI head on Windows.
 
 ## Create With AI
 

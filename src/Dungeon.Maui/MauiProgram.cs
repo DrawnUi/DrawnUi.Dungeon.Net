@@ -12,7 +12,7 @@ using DrawnUi.Models;
 
 namespace DungeonRun;
 
-/// <summary>Dungeon Run on .NET MAUI (Android, iOS, Mac Catalyst): the fonts through the MAUI font pipeline, the game in one page.</summary>
+/// <summary>Dungeon Run on .NET MAUI (Android, iOS, Mac Catalyst, Windows): the fonts through the MAUI font pipeline, the game in one page.</summary>
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -34,7 +34,7 @@ public static class MauiProgram
 
         builder.UseDrawnUi(new DrawnUiStartupSettings
         {
-#if MACCATALYST
+#if MACCATALYST || WINDOWS
             // the keys of the desktop heads (arrows, Space, Escape) and their window: 1100x700 points
             UseDesktopKeyboard = true,
             DesktopWindow = new() { Width = 1100, Height = 700 },
