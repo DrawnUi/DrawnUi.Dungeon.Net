@@ -50,9 +50,12 @@
         <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.80" />
     </ItemGroup>
 
-    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\Maui\Addons\DrawnUi.Maui.Game\DrawnUi.Maui.Game.csproj" />
+    <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.Maui.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)Maui\Addons\DrawnUi.Maui.Game\DrawnUi.Maui.Game.csproj" />
     </ItemGroup>
 
     <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />

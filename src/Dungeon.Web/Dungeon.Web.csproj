@@ -19,13 +19,16 @@
         <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.148.0" />
     </ItemGroup>
 
-    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\Wasm\Addons\DrawnUi.Wasm.Game\DrawnUi.Wasm.Game.csproj" />
+    <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.Web.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)Wasm\Addons\DrawnUi.Wasm.Game\DrawnUi.Wasm.Game.csproj" />
     </ItemGroup>
 
     <!-- A ProjectReference does not import the package's buildTransitive props (the GPU js-library link flag). -->
-    <Import Project="..\..\..\DrawnUi\src\Wasm\DrawnUi\buildTransitive\DrawnUi.Wasm.props" />
+    <Import Project="$(DrawnUiSource)Wasm\DrawnUi\buildTransitive\DrawnUi.Wasm.props" Condition="'$(UseDrawnUiSource)' == 'true'" />
 
     <ItemGroup>
         <WasmExtraConfig Include="emcc_flags">

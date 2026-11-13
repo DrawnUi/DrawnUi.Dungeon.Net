@@ -13,8 +13,11 @@
         <DefineConstants>$(DefineConstants);DRAWNUI_NET</DefineConstants>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\Net\Addons\DrawnUi.Net.Game\DrawnUi.Net.Game.csproj" />
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.Net.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)Net\Addons\DrawnUi.Net.Game\DrawnUi.Net.Game.csproj" />
     </ItemGroup>
 
     <Import Project="..\..\src\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />

@@ -48,9 +48,14 @@
         </ItemGroup>
     </Target>
 
-    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
+    <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.OpenTk.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)OpenTk\Addons\DrawnUi.OpenTk.Game\DrawnUi.OpenTk.Game.csproj" />
+    </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\OpenTk\Addons\DrawnUi.OpenTk.Game\DrawnUi.OpenTk.Game.csproj" />
         <!-- Linux publish: the native Skia runtime -->
         <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.148.0" />
     </ItemGroup>

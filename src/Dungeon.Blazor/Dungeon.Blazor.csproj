@@ -26,10 +26,14 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.7" PrivateAssets="all" />
     </ItemGroup>
 
-    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\Blazor\DrawnUi.Wasm\DrawnUi.Blazor.Wasm.csproj" />
-        <ProjectReference Include="..\..\..\DrawnUi\src\Blazor\Addons\DrawnUi.Blazor.Game\DrawnUi.Blazor.Game.csproj" />
+    <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.Blazor.Wasm" Version="$(DrawnUiVersion)" />
+        <PackageReference Include="DrawnUi.Blazor.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)Blazor\DrawnUi.Wasm\DrawnUi.Blazor.Wasm.csproj" />
+        <ProjectReference Include="$(DrawnUiSource)Blazor\Addons\DrawnUi.Blazor.Game\DrawnUi.Blazor.Game.csproj" />
     </ItemGroup>
 
     <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />

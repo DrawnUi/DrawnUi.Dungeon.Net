@@ -1,0 +1,11 @@
+<Project>
+
+    <!-- DrawnUI comes from NuGet. To build against a DrawnUi.Net checkout placed next to this repo (..\DrawnUi), pass
+         -p:UseDrawnUiSource=true (or set it here). -->
+    <PropertyGroup>
+        <DrawnUiVersion>1.10.8.26</DrawnUiVersion>
+        <UseDrawnUiSource Condition="'$(UseDrawnUiSource)' == ''">false</UseDrawnUiSource>
+        <DrawnUiSource>$(MSBuildThisFileDirectory)..\DrawnUi\src\</DrawnUiSource>
+    </PropertyGroup>
+
+</Project>

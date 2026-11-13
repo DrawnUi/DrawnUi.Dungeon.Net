@@ -16,10 +16,14 @@
         <ApplicationIcon>icon.ico</ApplicationIcon>
     </PropertyGroup>
 
-    <!-- The DrawnUi source while we develop (branch Cells, with the SKMesh stand-in), not the NuGet. -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\DrawnUi\src\Wpf\Drawnui.Wpf\DrawnUi.Wpf.csproj" />
-        <ProjectReference Include="..\..\..\DrawnUi\src\Wpf\Addons\DrawnUi.Wpf.Game\DrawnUi.Wpf.Game.csproj" />
+    <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->
+    <ItemGroup Condition="'$(UseDrawnUiSource)' != 'true'">
+        <PackageReference Include="DrawnUi.Wpf" Version="$(DrawnUiVersion)" />
+        <PackageReference Include="DrawnUi.Wpf.Game" Version="$(DrawnUiVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseDrawnUiSource)' == 'true'">
+        <ProjectReference Include="$(DrawnUiSource)Wpf\Drawnui.Wpf\DrawnUi.Wpf.csproj" />
+        <ProjectReference Include="$(DrawnUiSource)Wpf\Addons\DrawnUi.Wpf.Game\DrawnUi.Wpf.Game.csproj" />
     </ItemGroup>
 
     <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />

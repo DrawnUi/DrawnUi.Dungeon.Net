@@ -1,7 +1,7 @@
 # Publishes a web head of the game to its Cloudflare Pages site.
 #   pwsh dev/publish-web.ps1 -Head Web      -> https://dungeonnet.drawnui.net    (pure WebAssembly, DrawnUi.Web)
 #   pwsh dev/publish-web.ps1 -Head Blazor   -> https://dungeonblazor.drawnui.net (Blazor WebAssembly)
-# Needs CLOUDFLARE_API_TOKEN (Pages write) in the environment and the DrawnUi source next to this folder.
+# Needs CLOUDFLARE_API_TOKEN (Pages write) in the environment.
 # -Out reuses an existing publish folder (skips dotnet publish).
 param(
     [ValidateSet('Web', 'Blazor')] [string] $Head = 'Web',
