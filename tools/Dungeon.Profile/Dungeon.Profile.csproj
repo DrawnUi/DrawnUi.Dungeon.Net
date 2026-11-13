@@ -3,6 +3,7 @@
     <!-- Headless allocation and time profile of the game on DrawnUi.Net (raster, desktop .NET): which types a frame
          allocates, on the title and in a run. A dev tool, not shipped. -->
     <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
