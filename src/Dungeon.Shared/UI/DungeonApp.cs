@@ -308,7 +308,8 @@ public partial class DungeonApp
         _sceneLayer.ScaleX = 1.0 / scale;
         _sceneLayer.ScaleY = 1.0 / scale;
         _sceneLayer.Offscreen = scale < 1.0;
-        Console.WriteLine($"dungeon: scene at {scale * 100:F0} % of the screen (cap {SceneCap.MaxDensity:0.##} px per point, screen {_game?.RenderingScale:0.##})");
+        if (_game != null && _game.RenderingScale > 0)
+            Console.WriteLine($"dungeon: scene at {scale * 100:F0} % of the screen (cap {SceneCap.MaxDensity:0.##} px per point, screen {_game.RenderingScale:0.##})");
     }
 
     /// <summary>The whole tree: the shell, its root layer and everything over the game.</summary>
