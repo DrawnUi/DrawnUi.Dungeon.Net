@@ -49,6 +49,10 @@ public partial class DungeonApp
 
     public void Tick(float delta)
     {
+        float sceneScale = SceneCap.For(_game.RenderingScale);
+        if (sceneScale != _appliedScale)
+            ApplyRenderScale(sceneScale);
+
         // On a narrow screen (a phone held upright) the health does not fit between the score and the buttons:
         // it goes under them.
         // the size the system bars and cutouts leave free (the whole canvas on the web and the desktop)

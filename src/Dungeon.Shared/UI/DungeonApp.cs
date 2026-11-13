@@ -67,6 +67,8 @@ public partial class DungeonApp
 
     // ---- the tree ----
     Scene _scene;
+    OffscreenLayer _sceneLayer;
+    float _appliedScale;
     SkiaShaderEffect _post;
     SkiaLayout _title;
     SkiaLabel _score;
@@ -298,6 +300,17 @@ public partial class DungeonApp
         _canvasWidth = -1; // the sizes that follow the free width are set again at the next frame
     }
 
+    void ApplyRenderScale(float scale)
+    {
+        _appliedScale = scale;
+        _sceneLayer.HorizontalFillRatio = scale;
+        _sceneLayer.VerticalFillRatio = scale;
+        _sceneLayer.ScaleX = 1.0 / scale;
+        _sceneLayer.ScaleY = 1.0 / scale;
+        _sceneLayer.Offscreen = scale < 1.0;
+        Console.WriteLine($"dungeon: scene at {scale * 100:F0} % of the screen (cap {SceneCap.MaxDensity:0.##} px per point, screen {_game?.RenderingScale:0.##})");
+    }
+
     /// <summary>The whole tree: the shell, its root layer and everything over the game.</summary>
     public SkiaControl Build()
     {
@@ -330,13 +343,26 @@ public partial class DungeonApp
                 {
                     Children = new List<SkiaControl>
                     {
-                        // Draws every frame: no cache. The post effect reads what it drew.
-                        new Scene
+                        // The 3D scene and its post effect under the scene cap (SceneCap.cs): a layer that share
+                        // of the screen, drawn offscreen below 1 and scaled back up to the whole of it.
+                        new OffscreenLayer
                         {
                             HorizontalOptions = LayoutOptions.Fill,
                             VerticalOptions = LayoutOptions.Fill,
-                            VisualEffects = { _post },
-                        }.Assign(out _scene),
+                            AnchorX = 0,
+                            AnchorY = 0,
+                            Children =
+                            {
+                                // Draws every frame: no cache. The post effect reads what it drew.
+                                new Scene
+                                {
+                                    HorizontalOptions = LayoutOptions.Fill,
+                                    VerticalOptions = LayoutOptions.Fill,
+                                    VisualEffects = { _post },
+                                }.Assign(out _scene),
+                            },
+                        }.Assign(out _sceneLayer)
+                         .Initialize(me => ApplyRenderScale(1.0f)),
                     },
                 }.Assign(out _game),
 

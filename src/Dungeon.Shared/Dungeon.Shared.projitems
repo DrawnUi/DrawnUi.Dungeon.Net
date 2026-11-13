@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonGame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Tick.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\SceneCap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\DungeonApp.Dialogs.cs" />
     <!-- the drawn SkiaShell of the .NET heads; the MAUI head brings its own host (MAUI's SkiaShell is a page) -->
