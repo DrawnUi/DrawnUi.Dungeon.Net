@@ -10,6 +10,16 @@ Android, iPhone, iPad, Mac and Windows (.NET MAUI).
 Play it: [dungeonnet.drawnui.net](https://dungeonnet.drawnui.net) (.NET WebAssembly) or
 [dungeonblazor.drawnui.net](https://dungeonblazor.drawnui.net) (Blazor).
 
+## The same game in other engines
+
+The same game, with the same shaders, screens and rules, is also built with the other DrawnUI engines:
+
+| Engine | Play | Source |
+|---|---|---|
+| DrawnUI for .NET (this repo) | [dungeonnet.drawnui.net](https://dungeonnet.drawnui.net), [dungeonblazor.drawnui.net](https://dungeonblazor.drawnui.net) | here |
+| DrawnUI for Rust | [run.drawnui.net](https://run.drawnui.net) | [DrawnUi.Rust/examples/dungeon](https://github.com/DrawnUi/DrawnUi.Rust/tree/main/examples/dungeon) |
+| DrawnUi.React | [dungeonreact.drawnui.net](https://dungeonreact.drawnui.net) | [DrawnUi.React/samples/dungeon](https://github.com/DrawnUi/DrawnUi.React/tree/master/samples/dungeon) |
+
 This demo shows a full 3D world painted by SkSL shaders in a .NET app. One `SKMesh` carries the scene's triangles
 (floor, walls, pillars, sprites) and tells each pixel which surface it is on; the shaders do all the painting.
 
@@ -51,7 +61,7 @@ upcoming `SKMesh`, so when SkiaSharp ships its own, removing that one `using` li
 
 Here the mesh's vertex shader has nothing to do. For an example where it does the 3D work on the GPU (rotating,
 projecting and lighting a model loaded from an OBJ file), see the OBJ screen of DrawnUi's Blazor sandbox:
-[`SkMeshRocketProbe.razor`](https://github.com/DrawnUi/DrawnUi.Net/blob/Cells/src/Blazor/Samples/BlazorSandbox/Pages/SkMeshRocketProbe.razor).
+[`SkMeshRocketProbe.razor`](https://github.com/DrawnUi/DrawnUi.Net/blob/main/src/Blazor/Samples/BlazorSandbox/Pages/SkMeshRocketProbe.razor).
 
 ## How to play
 
@@ -108,8 +118,9 @@ dotnet workload list
 `dotnet --version` must show 10.x, and `dotnet workload list` must list `wasm-tools`
 (`dotnet workload install wasm-tools` adds it).
 
-For now the game references the DrawnUi source, not the NuGet: clone [DrawnUi](https://github.com/DrawnUi/DrawnUi.Net)
-next to this folder as `..\DrawnUi` and check out its branch `Cells`.
+DrawnUI comes from NuGet (version in `Directory.Build.props`), so a plain clone builds. To build against the DrawnUI
+source instead, clone [DrawnUi.Net](https://github.com/DrawnUi/DrawnUi.Net) next to this folder as `..\DrawnUi` and add
+`-p:UseDrawnUiSource=true` to the `dotnet` commands below.
 
 Run the web head from this folder:
 
