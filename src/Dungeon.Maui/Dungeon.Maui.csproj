@@ -48,6 +48,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.80" />
+        <PackageReference Include="SkiaSharp.NativeAssets.MacCatalyst" Version="$(SkiaSharpVersion)" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
     </ItemGroup>
 
     <!-- DrawnUI from NuGet, or from a DrawnUi.Net checkout next to this repo with -p:UseDrawnUiSource=true -->

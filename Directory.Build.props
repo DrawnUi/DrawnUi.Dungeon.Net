@@ -6,6 +6,11 @@
         <DrawnUiVersion>1.10.8.26</DrawnUiVersion>
         <UseDrawnUiSource Condition="'$(UseDrawnUiSource)' == ''">false</UseDrawnUiSource>
         <DrawnUiSource>$(MSBuildThisFileDirectory)..\DrawnUi\src\</DrawnUiSource>
+        <SkiaSharpVersion>4.159.0</SkiaSharpVersion>
     </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsTestProject)' != 'true'">
+        <PackageReference Include="SkiaSharp" Version="$(SkiaSharpVersion)" />
+    </ItemGroup>
 
 </Project>
