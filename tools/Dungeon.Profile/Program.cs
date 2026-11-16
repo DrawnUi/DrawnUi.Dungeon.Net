@@ -132,24 +132,27 @@ public static class Program
     /// </summary>
     static void MeshOnly(int frames)
     {
-        using DrawnUi.Draw.Meshes.SKMeshSpecification spec = DrawnUi.Draw.Meshes.SKMeshSpecification.Make(
-            [
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationAttributeType.Float2, 0, "position"),
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationAttributeType.Float4, 8, "a"),
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationAttributeType.Float4, 24, "b"),
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationAttributeType.Float4, 40, "c"),
-            ], 56,
-            [
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationVaryingType.Float4, "a"),
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationVaryingType.Float4, "b"),
-                new(DrawnUi.Draw.Meshes.SKMeshSpecificationVaryingType.Float4, "c"),
-            ], Shaders.MESH_VS, Shaders.MESH_FS, SKColorSpace.CreateSrgb(), SKAlphaType.Premul, out var errors);
+        var specBuilder = new SKMeshSpecificationBuilder(Shaders.MESH_VS, Shaders.MESH_FS)
+        {
+            ColorSpace = SKColorSpace.CreateSrgb(),
+            AlphaType = SKAlphaType.Premul,
+        };
+        specBuilder.AddAttribute("position", SKMeshSpecificationAttributeType.Float2);
+        specBuilder.AddAttribute("a", SKMeshSpecificationAttributeType.Float4);
+        specBuilder.AddAttribute("b", SKMeshSpecificationAttributeType.Float4);
+        specBuilder.AddAttribute("c", SKMeshSpecificationAttributeType.Float4);
+        specBuilder.AddVarying("a", SKMeshSpecificationVaryingType.Float4);
+        specBuilder.AddVarying("b", SKMeshSpecificationVaryingType.Float4);
+        specBuilder.AddVarying("c", SKMeshSpecificationVaryingType.Float4);
+        using SKMeshSpecification spec = specBuilder.Build(out var errors);
         if (spec == null)
             throw new Exception(errors);
+        using var meshBuilder = new SKMeshBuilder(spec);
         var floats = new float[3000 * 3 * 14];
         var rnd = new Random(1);
         for (int i = 0; i < floats.Length; i++)
             floats[i] = (float)rnd.NextDouble() * 4 + 0.5f;
+        using var vertexBuffer = SKMeshVertexBuffer.Create(floats.Length * sizeof(float));
         var uniforms = new float[20];
         using var surface = SKSurface.Create(new SKImageInfo(4, 4));
         using var paint = new SKPaint { Color = SKColors.White };
@@ -157,12 +160,17 @@ public static class Program
         void Frame(int i)
         {
             int count = (480 + i * 7 % 40) * 3;
-            using var buffer = DrawnUi.Draw.Meshes.SKMeshVertexBuffer.Make(
-                System.Runtime.InteropServices.MemoryMarshal.AsBytes(floats.AsSpan(0, count * 14)));
-            using var data = SKData.CreateCopy(System.Runtime.InteropServices.MemoryMarshal.AsBytes(uniforms.AsSpan()));
-            using var mesh = DrawnUi.Draw.Meshes.SKMesh.Make(spec, DrawnUi.Draw.Meshes.SKMeshMode.Triangles, buffer, count, 0, data,
-                new SKRect(0, 0, 4, 4), out _);
-            DrawnUi.Draw.Meshes.SKMeshCanvasExtensions.DrawMesh(surface.Canvas, mesh, paint);
+            vertexBuffer.Update(System.Runtime.InteropServices.MemoryMarshal.AsBytes(floats.AsSpan(0, count * 14)), 0);
+            var u = meshBuilder.Uniforms;
+            u["uTC"] = uniforms.AsSpan(0, 4);
+            u["uTorch"] = uniforms.AsSpan(4, 4);
+            u["uAccent"] = uniforms.AsSpan(8, 4);
+            u["uFog"] = uniforms.AsSpan(12, 4);
+            u["uOut"] = uniforms.AsSpan(16, 4);
+            meshBuilder.SetVertexBuffer(vertexBuffer, count, 0);
+            meshBuilder.Bounds = new SKRect(0, 0, 4, 4);
+            using var mesh = meshBuilder.Build();
+            surface.Canvas.DrawMesh(mesh, paint);
         }
 
         for (int i = 0; i < 200; i++)
@@ -174,17 +182,22 @@ public static class Program
             {
                 int count = (480 + i * 7 % 40) * 3;
                 long t0 = GC.GetAllocatedBytesForCurrentThread();
-                var buffer = DrawnUi.Draw.Meshes.SKMeshVertexBuffer.Make(
-                    System.Runtime.InteropServices.MemoryMarshal.AsBytes(floats.AsSpan(0, count * 14)));
+                vertexBuffer.Update(System.Runtime.InteropServices.MemoryMarshal.AsBytes(floats.AsSpan(0, count * 14)), 0);
                 long t1 = GC.GetAllocatedBytesForCurrentThread();
-                var u = SKData.CreateCopy(System.Runtime.InteropServices.MemoryMarshal.AsBytes(uniforms.AsSpan()));
+                var u = meshBuilder.Uniforms;
+                u["uTC"] = uniforms.AsSpan(0, 4);
+                u["uTorch"] = uniforms.AsSpan(4, 4);
+                u["uAccent"] = uniforms.AsSpan(8, 4);
+                u["uFog"] = uniforms.AsSpan(12, 4);
+                u["uOut"] = uniforms.AsSpan(16, 4);
                 long t2 = GC.GetAllocatedBytesForCurrentThread();
-                var mesh = DrawnUi.Draw.Meshes.SKMesh.Make(spec, DrawnUi.Draw.Meshes.SKMeshMode.Triangles, buffer, count, 0, u,
-                    new SKRect(0, 0, 4, 4), out _);
+                meshBuilder.SetVertexBuffer(vertexBuffer, count, 0);
+                meshBuilder.Bounds = new SKRect(0, 0, 4, 4);
+                var mesh = meshBuilder.Build();
                 long t3 = GC.GetAllocatedBytesForCurrentThread();
-                DrawnUi.Draw.Meshes.SKMeshCanvasExtensions.DrawMesh(surface.Canvas, mesh, paint);
+                surface.Canvas.DrawMesh(mesh, paint);
                 long t4 = GC.GetAllocatedBytesForCurrentThread();
-                mesh.Dispose(); u.Dispose(); buffer.Dispose();
+                mesh.Dispose();
                 long t5 = GC.GetAllocatedBytesForCurrentThread();
                 vb += t1 - t0; data += t2 - t1; make += t3 - t2; draw += t4 - t3; dispose += t5 - t4;
             }

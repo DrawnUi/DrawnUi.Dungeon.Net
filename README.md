@@ -56,8 +56,8 @@ Why not without `SKMesh`:
 - **One full-screen shader** could trace the corridor itself, but that is a different renderer: every pixel would have
   to test the walls, pillars and sprites, which costs far more per pixel.
 
-The `SKMesh` API comes from DrawnUi (`using DrawnUi.Draw.Meshes;`): it has the same classes and methods as SkiaSharp's
-upcoming `SKMesh`, so when SkiaSharp ships its own, removing that one `using` line switches the game to it.
+The scene uses SkiaSharp's `SKMesh` API (`SKMeshSpecificationBuilder`, `SKMeshVertexBuffer`, `SKMeshBuilder` and
+`SKCanvas.DrawMesh`) to compile the specification once and update the vertex buffer and uniforms in place each frame.
 
 Here the mesh's vertex shader has nothing to do. For an example where it does the 3D work on the GPU (rotating,
 projecting and lighting a model loaded from an OBJ file), see the OBJ screen of DrawnUi's Blazor sandbox:

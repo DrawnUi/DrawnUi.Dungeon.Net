@@ -57,7 +57,7 @@
     </ItemGroup>
     <ItemGroup>
         <!-- Linux publish: the native Skia runtime -->
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.148.0" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="$(SkiaSharpVersion)" />
     </ItemGroup>
 
     <Import Project="..\Dungeon.Shared\Dungeon.Shared.projitems" Label="Shared" />

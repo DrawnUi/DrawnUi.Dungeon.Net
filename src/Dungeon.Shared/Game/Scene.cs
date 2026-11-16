@@ -3,7 +3,6 @@
 // does the materials, the torches and the fog. The game loop steps `World` and marks the control to draw again.
 
 using System.Runtime.InteropServices;
-using DrawnUi.Draw.Meshes;
 
 namespace DungeonRun;
 
@@ -26,6 +25,9 @@ public class Scene : SkiaControl
     public readonly World World = new();
 
     SKMeshSpecification _spec;
+    SKMeshBuilder _meshBuilder;
+    SKMeshVertexBuffer _vertexBuffer;
+    int _vertexBufferBytes;
     bool _specMade;
     bool _reported;
 
@@ -71,23 +73,23 @@ public class Scene : SkiaControl
         if (!_specMade)
         {
             _specMade = true;
-            ReadOnlySpan<SKMeshSpecificationAttribute> attributes =
-            [
-                new(SKMeshSpecificationAttributeType.Float2, 0, "position"),
-                new(SKMeshSpecificationAttributeType.Float4, 8, "a"),
-                new(SKMeshSpecificationAttributeType.Float4, 24, "b"),
-                new(SKMeshSpecificationAttributeType.Float4, 40, "c"),
-            ];
-            ReadOnlySpan<SKMeshSpecificationVarying> varyings =
-            [
-                new(SKMeshSpecificationVaryingType.Float4, "a"),
-                new(SKMeshSpecificationVaryingType.Float4, "b"),
-                new(SKMeshSpecificationVaryingType.Float4, "c"),
-            ];
-            _spec = SKMeshSpecification.Make(attributes, FLOATS * 4, varyings, Shaders.MESH_VS, Shaders.MESH_FS,
-                SKColorSpace.CreateSrgb(), SKAlphaType.Premul, out var errors);
+            var specBuilder = new SKMeshSpecificationBuilder(Shaders.MESH_VS, Shaders.MESH_FS)
+            {
+                ColorSpace = SKColorSpace.CreateSrgb(),
+                AlphaType = SKAlphaType.Premul,
+            };
+            specBuilder.AddAttribute("position", SKMeshSpecificationAttributeType.Float2);
+            specBuilder.AddAttribute("a", SKMeshSpecificationAttributeType.Float4);
+            specBuilder.AddAttribute("b", SKMeshSpecificationAttributeType.Float4);
+            specBuilder.AddAttribute("c", SKMeshSpecificationAttributeType.Float4);
+            specBuilder.AddVarying("a", SKMeshSpecificationVaryingType.Float4);
+            specBuilder.AddVarying("b", SKMeshSpecificationVaryingType.Float4);
+            specBuilder.AddVarying("c", SKMeshSpecificationVaryingType.Float4);
+            _spec = specBuilder.Build(out var errors);
             if (_spec == null)
                 Report("mesh SkSL", errors);
+            else
+                _meshBuilder = new SKMeshBuilder(_spec);
         }
         if (_spec == null)
             return;
@@ -141,9 +143,16 @@ public class Scene : SkiaControl
         if (count == 0)
             return;
         var bytes = MemoryMarshal.AsBytes(_vertices.AsSpan(0, _floats));
-        using var buffer = SKMeshVertexBuffer.Make(bytes);
-        if (buffer == null)
-            return;
+        if (_vertexBuffer == null || _vertexBufferBytes < _vertices.Length * sizeof(float))
+        {
+            _vertexBuffer?.Dispose();
+            _vertexBufferBytes = _vertices.Length * sizeof(float);
+            _vertexBuffer = SKMeshVertexBuffer.Create(_vertexBufferBytes);
+            if (_vertexBuffer == null)
+                return;
+        }
+        _vertexBuffer.Update(bytes, 0);
+
         float bright = dim * (1.0f + 0.7f * exitLight);
         // Near the exit the air clears (daylight), so the opening reads from far.
         float ramp = (float)Math.Clamp((world.Z - (World.EXIT - 600.0)) / 600.0, 0.0, 1.0);
@@ -153,11 +162,20 @@ public class Scene : SkiaControl
         (u[8], u[9], u[10], u[11]) = (accent[0], accent[1], accent[2], exitLight);
         (u[12], u[13], u[14], u[15]) = (fog[0], fog[1], fog[2], 0.028f * (1.0f - 0.4f * ramp) + 0.08f * world.Dread);
         (u[16], u[17], u[18], u[19]) = (world.Glare, 0.0f, 0.0f, 0.0f);
-        using var uniforms = SKData.CreateCopy(MemoryMarshal.AsBytes(u.AsSpan()));
-        using var mesh = SKMesh.Make(_spec, SKMeshMode.Triangles, buffer, count, 0, uniforms,
-            new SKRect(_left, _top, _right, _bottom), out var meshErrors);
+
+        var uniforms = _meshBuilder.Uniforms;
+        uniforms["uTC"] = u.AsSpan(0, 4);
+        uniforms["uTorch"] = u.AsSpan(4, 4);
+        uniforms["uAccent"] = u.AsSpan(8, 4);
+        uniforms["uFog"] = u.AsSpan(12, 4);
+        uniforms["uOut"] = u.AsSpan(16, 4);
+
+        _meshBuilder.SetVertexBuffer(_vertexBuffer, count, 0);
+        _meshBuilder.Bounds = new SKRect(_left, _top, _right, _bottom);
+        using var mesh = _meshBuilder.Build();
         if (mesh == null)
         {
+            _meshBuilder.Build(out var meshErrors);
             Report("mesh", meshErrors);
             return;
         }
@@ -391,6 +409,8 @@ public class Scene : SkiaControl
 
     public override void OnDisposing()
     {
+        _vertexBuffer?.Dispose();
+        _meshBuilder?.Dispose();
         _spec?.Dispose();
         _paint.Dispose();
         base.OnDisposing();
